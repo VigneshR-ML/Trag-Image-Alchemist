@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Successful - Image Editor Pro{% endblock %}
+
+{% block content %}
+<div class="success-container container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1 class="success-title">Your subscription was successful!</h1>
+            <p class="success-message">
+                Thank you for subscribing to Image Editor Pro. You now have unlimited access to all our premium features.
+            </p>
+            <p class="success-message mb-5">
+                A confirmation email has been sent to your email address with your subscription details.
+            </p>
+            
+            <div class="success-actions">
+                <a href="/editor" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-edit me-2"></i> Go to Editor
+                </a>
+                <a href="/" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-home me-2"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pro Features Showcase -->
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-12 text-center mb-4">
+            <h2>Your Pro Features</h2>
+            <p class="lead">Here are some of the premium features you now have access to:</p>
+        </div>
+        
+        <!-- Feature 1 -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-cut fa-3x mb-3 text-primary"></i>
+                    <h4>Advanced Background Removal</h4>
+                    <p>Perfect edge detection and improved quality for complex images.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-filter fa-3x mb-3 text-primary"></i>
+                    <h4>Premium Filters</h4>
+                    <p>Access to our complete library of professional photo filters.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-download fa-3x mb-3 text-primary"></i>
+                    <h4>High-Quality Exports</h4>
+                    <p>Download your edited images in the highest possible quality.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3>Need Help?</h3>
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="fas fa-headset me-2"></i> Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

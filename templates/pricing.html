@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Pricing - Image Editor Pro{% endblock %}
+
+{% block content %}
+<!-- Pricing Hero Section -->
+<section class="hero pricing-hero">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center fade-in">
+                <h1 class="hero-title mb-4">Choose the Right Plan for You</h1>
+                <p class="hero-description">Simple, transparent pricing with no hidden fees. All plans include access to our core features.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Tables -->
+<section class="pricing py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Free Plan -->
+            <div class="col-lg-5 mb-4 fade-in">
+                <div class="pricing-card">
+                    <h3 class="pricing-title">Free</h3>
+                    <div class="pricing-price">$0<span class="pricing-period">/month</span></div>
+                    <p class="mb-4">Perfect for casual users and beginners</p>
+                    
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">5 credits per email ID</li>
+                        <li class="pricing-feature">Basic background removal</li>
+                        <li class="pricing-feature">Essential editing tools</li>
+                        <li class="pricing-feature">Standard export quality</li>
+                        <li class="pricing-feature">Limited filters and effects</li>
+                    </ul>
+                    
+                    <a href="/editor" class="btn btn-outline-primary btn-lg pricing-cta">Start for Free</a>
+                </div>
+            </div>
+            
+            <!-- Pro Plan -->
+            <div class="col-lg-5 mb-4 fade-in">
+                <div class="pricing-card">
+                    <div class="pricing-tag">Recommended</div>
+                    <h3 class="pricing-title">Pro</h3>
+                    <div class="pricing-price">$0.50<span class="pricing-period">/month</span></div>
+                    <p class="mb-4">For professionals and serious creators</p>
+                    
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">Unlimited background removals</li>
+                        <li class="pricing-feature">Advanced AI-powered tools</li>
+                        <li class="pricing-feature">All premium features</li>
+                        <li class="pricing-feature">High-quality exports</li>
+                        <li class="pricing-feature">All filters and effects</li>
+                        <li class="pricing-feature">Priority support</li>
+                    </ul>
+                    
+                    <button 
+                        class="btn btn-primary btn-lg pricing-cta purchase-btn" 
+                        data-price-id="price_pro_monthly">
+                        Subscribe Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enterprise Section -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10 fade-in">
+                <div class="enterprise-card">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h3 class="mb-3">Need a custom solution for your team?</h3>
+                            <p class="mb-0">Our enterprise plan includes custom integrations, dedicated support, and volume discounts.</p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <button 
+                                class="btn btn-outline-primary btn-lg purchase-btn" 
+                                data-price-id="price_enterprise_monthly">
+                                Contact Sales
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Comparison Table -->
+<section class="comparison py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5 fade-in">Feature Comparison</h2>
+        
+        <div class="table-responsive fade-in">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th class="text-center">Free</th>
+                        <th class="text-center">Pro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Background Removal</td>
+                        <td class="text-center">Basic <i class="fas fa-check text-success"></i></td>
+                        <td class="text-center">Advanced <i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Credits</td>
+                        <td class="text-center">5 per email</td>
+                        <td class="text-center">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Image Quality</td>
+                        <td class="text-center">Standard</td>
+                        <td class="text-center">High Resolution</td>
+                    </tr>
+                    <tr>
+                        <td>Export Formats</td>
+                        <td class="text-center">JPG, PNG</td>
+                        <td class="text-center">JPG, PNG, Transparent PNG</td>
+                    </tr>
+                    <tr>
+                        <td>Advanced Filters</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Batch Processing</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Priority Support</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-5 fade-in">Frequently Asked Questions</h2>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion fade-in" id="pricingFAQ">
+                    <!-- FAQ Item 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                How do the credits work on the Free plan?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                With the Free plan, you get 5 credits per email address. Each background removal or advanced edit consumes one credit. Basic editing operations like resize, crop, and simple filters are always free.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Can I cancel my Pro subscription at any time?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                Yes, you can cancel your Pro subscription at any time. Your subscription will remain active until the end of your current billing period, and you won't be charged after that.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                We accept major credit cards including Visa, Mastercard, American Express, and Discover. All payments are securely processed through Stripe.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Item 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Is there a limit to how many images I can edit on the Pro plan?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                No, with the Pro plan you get unlimited edits, unlimited background removals, and access to all premium features. There are no hidden usage caps.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center fade-in">
+                <h2 class="mb-4">Ready to transform your images?</h2>
+                <p class="lead mb-5">Join thousands of users who use Image Editor Pro to create stunning visuals in minutes.</p>
+                <a href="/editor" class="btn btn-primary btn-lg me-3">Try for Free</a>
+                <button class="btn btn-outline-primary btn-lg purchase-btn" data-price-id="price_pro_monthly">Get Pro</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/stripe.js') }}"></script>
+{% endblock %}

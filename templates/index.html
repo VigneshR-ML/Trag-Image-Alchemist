@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Image Editor - Image Editor Pro{% endblock %}
+
+{% block head %}
+<style>
+    /* Page-specific styles */
+    body {
+        overflow-x: hidden;
+    }
+    
+    .editor-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 230px); /* Adjust for header and footer */
+        min-height: 600px;
+    }
+    
+    @media (max-width: 768px) {
+        .editor-main {
+            flex-direction: column;
+        }
+        
+        .editor-sidebar {
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Editor View -->
+<div class="container-fluid py-4">
+    <!-- Upload Container (initial view) -->
+    <div id="upload-container" class="upload-container">
+        <i class="fa fa-cloud-upload-alt upload-icon"></i>
+        <h2 class="upload-title">Upload an Image to Start Editing</h2>
+        <p class="upload-description">Drag & drop an image here, or click to select a file</p>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="upload-input" name="file" accept=".jpg,.jpeg,.png,.gif" class="d-none">
+            <button type="button" class="btn btn-primary btn-lg" onclick="document.getElementById('upload-input').click()">Select Image</button>
+        </form>
+    </div>
+    
+    <!-- Editor Container (shown after upload) -->
+    <div id="editor-container" class="editor-container" style="display: none;">
+        <div class="editor-header">
+            <h1 class="editor-title">Image Editor</h1>
+            <div class="editor-actions">
+                <button id="reset-button" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-undo me-1"></i> Reset
+                </button>
+                <button id="download-button" class="btn btn-primary">
+                    <i class="fas fa-download me-1"></i> Download
+                </button>
+            </div>
+        </div>
+        
+        <div class="editor-main">
+            <!-- Sidebar with Tools -->
+            <div class="editor-sidebar">
+                <!-- Basic Operations -->
+                <div class="tool-section">
+                    <h3 class="tool-section-title">Basic Tools</h3>
+                    
+                    <button class="tool-btn" data-tool="remove-background">
+                        <i class="fas fa-cut tool-icon"></i> Remove Background
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="enhance">
+                        <i class="fas fa-magic tool-icon"></i> Enhance
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="resize">
+                        <i class="fas fa-expand-arrows-alt tool-icon"></i> Resize
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="rotate">
+                        <i class="fas fa-redo tool-icon"></i> Rotate
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="flip">
+                        <i class="fas fa-exchange-alt tool-icon"></i> Flip
+                    </button>
+                </div>
+                
+                <!-- Adjustments -->
+                <div class="tool-section">
+                    <h3 class="tool-section-title">Adjustments</h3>
+                    
+                    <button class="tool-btn" data-tool="brightness">
+                        <i class="fas fa-sun tool-icon"></i> Brightness
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="contrast">
+                        <i class="fas fa-adjust tool-icon"></i> Contrast
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="saturation">
+                        <i class="fas fa-palette tool-icon"></i> Saturation
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="hue">
+                        <i class="fas fa-tint tool-icon"></i> Hue
+                    </button>
+                </div>
+                
+                <!-- Effects -->
+                <div class="tool-section">
+                    <h3 class="tool-section-title">Effects & Filters</h3>
+                    
+                    <button class="tool-btn" data-tool="filter">
+                        <i class="fas fa-filter tool-icon"></i> Filters
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="bw">
+                        <i class="fas fa-adjust tool-icon"></i> Black & White
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="blur">
+                        <i class="fas fa-water tool-icon"></i> Blur
+                    </button>
+                    
+                    <button class="tool-btn" data-tool="sharpen">
+                        <i class="fas fa-bezier-curve tool-icon"></i> Sharpen
+                    </button>
+                </div>
+                
+                <!-- Export -->
+                <div class="tool-section">
+                    <h3 class="tool-section-title">Export</h3>
+                    
+                    <button class="tool-btn" data-tool="compress">
+                        <i class="fas fa-compress tool-icon"></i> Compress
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="editor-content">
+                <!-- Preview Area -->
+                <div id="preview-container" class="preview-container">
+                    <img id="preview-img" class="preview-img" src="" alt="Preview">
+                </div>
+                
+                <!-- Controls Container -->
+                <div id="controls-container" class="controls-container">
+                    <!-- Tool-specific controls will be loaded here -->
+                    <div class="alert alert-info">
+                        Select a tool from the left panel to begin editing
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}
