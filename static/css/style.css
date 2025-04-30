@@ -12,13 +12,28 @@
   --spacing-base: 8px;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   color: var(--text-color);
   background-color: var(--background-color);
-  margin: 0;
-  padding: 0;
+}
+
+/* Sticky footer pattern */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+}
+
+.main-content {
+  flex: 1; /* Takes up all available space, pushing footer down */
 }
 
 .container {
@@ -274,9 +289,9 @@ body {
 .editor-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  min-height: 500px; /* Minimum height instead of viewport height */
   background-color: var(--background-color);
-  margin-bottom: 4rem; /* Add space at the bottom to prevent overlap with footer */
+  margin-bottom: 2rem; /* Some spacing between editor and footer */
 }
 
 .editor-header {
@@ -302,7 +317,8 @@ body {
 .editor-main {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: visible; /* Allow content to flow naturally */
+  padding-bottom: 1rem; /* Add some padding at the bottom */
 }
 
 .editor-sidebar {
@@ -318,7 +334,7 @@ body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible; /* Allow content to flow naturally */
   position: relative;
   z-index: 10; /* Higher z-index to ensure content appears above footer */
 }
@@ -467,8 +483,9 @@ body {
 .footer {
   background-color: var(--light-bg);
   padding: 3rem 0;
-  position: relative;
-  z-index: 1;
+  position: relative; /* Not fixed or absolute */
+  width: 100%;
+  margin-top: auto; /* Push to bottom when content is short */
 }
 
 .footer-logo {

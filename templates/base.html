@@ -27,105 +27,108 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <a class="navbar-brand" href="/">Image Editor Pro</a>
-                
-                <!-- Mobile menu button -->
-                <button class="navbar-toggler mobile-menu-button" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <!-- Nav links -->
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/#features">Features</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/pricing">Pricing</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/editor">Editor</a>
-                        </li>
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-outline-primary" href="#" id="login-btn">Sign In</a>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-primary" href="#" id="signup-btn">Sign Up</a>
-                        </li>
-                    </ul>
+    <!-- Page wrapper for sticky footer -->
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <nav class="navbar navbar-expand-lg navbar-dark">
+                <div class="container">
+                    <a class="navbar-brand" href="/">Image Editor Pro</a>
+                    
+                    <!-- Mobile menu button -->
+                    <button class="navbar-toggler mobile-menu-button" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <!-- Nav links -->
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#features">Features</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/pricing">Pricing</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/editor">Editor</a>
+                            </li>
+                            <li class="nav-item ms-lg-3">
+                                <a class="btn btn-outline-primary" href="#" id="login-btn">Sign In</a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-primary" href="#" id="signup-btn">Sign Up</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <!-- Company Info -->
-                <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-                    <a href="/" class="footer-logo">Image Editor Pro</a>
-                    <p class="footer-tagline">Professional image editing made simple.</p>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            </nav>
+        </header>
+        
+        <!-- Main Content - flex-grow to push footer down -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer - always stays at bottom -->
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <!-- Company Info -->
+                    <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                        <a href="/" class="footer-logo">Image Editor Pro</a>
+                        <p class="footer-tagline">Professional image editing made simple.</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                        <h3 class="footer-title">Quick Links</h3>
+                        <ul class="footer-links">
+                            <li class="footer-link"><a href="/">Home</a></li>
+                            <li class="footer-link"><a href="/#features">Features</a></li>
+                            <li class="footer-link"><a href="/pricing">Pricing</a></li>
+                            <li class="footer-link"><a href="/editor">Editor</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Resources -->
+                    <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                        <h3 class="footer-title">Resources</h3>
+                        <ul class="footer-links">
+                            <li class="footer-link"><a href="#">Help Center</a></li>
+                            <li class="footer-link"><a href="#">Documentation</a></li>
+                            <li class="footer-link"><a href="#">Blog</a></li>
+                            <li class="footer-link"><a href="#">Contact Us</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Legal -->
+                    <div class="col-md-6 col-lg-3">
+                        <h3 class="footer-title">Legal</h3>
+                        <ul class="footer-links">
+                            <li class="footer-link"><a href="#">Terms of Service</a></li>
+                            <li class="footer-link"><a href="#">Privacy Policy</a></li>
+                            <li class="footer-link"><a href="#">Cookie Policy</a></li>
+                            <li class="footer-link"><a href="#">GDPR</a></li>
+                        </ul>
                     </div>
                 </div>
                 
-                <!-- Quick Links -->
-                <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-                    <h3 class="footer-title">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="/">Home</a></li>
-                        <li class="footer-link"><a href="/#features">Features</a></li>
-                        <li class="footer-link"><a href="/pricing">Pricing</a></li>
-                        <li class="footer-link"><a href="/editor">Editor</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Resources -->
-                <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-                    <h3 class="footer-title">Resources</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="#">Help Center</a></li>
-                        <li class="footer-link"><a href="#">Documentation</a></li>
-                        <li class="footer-link"><a href="#">Blog</a></li>
-                        <li class="footer-link"><a href="#">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Legal -->
-                <div class="col-md-6 col-lg-3">
-                    <h3 class="footer-title">Legal</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="#">Terms of Service</a></li>
-                        <li class="footer-link"><a href="#">Privacy Policy</a></li>
-                        <li class="footer-link"><a href="#">Cookie Policy</a></li>
-                        <li class="footer-link"><a href="#">GDPR</a></li>
-                    </ul>
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>&copy; 2023 Image Editor Pro. All rights reserved.</p>
                 </div>
             </div>
-            
-            <!-- Footer Bottom -->
-            <div class="footer-bottom">
-                <p>&copy; 2023 Image Editor Pro. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </div><!-- End page-wrapper -->
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
