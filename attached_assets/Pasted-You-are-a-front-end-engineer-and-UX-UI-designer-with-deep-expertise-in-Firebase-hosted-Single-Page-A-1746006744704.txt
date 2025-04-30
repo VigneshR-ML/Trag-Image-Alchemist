@@ -1,0 +1,104 @@
+You are a front-end engineer and UX/UI designer with deep expertise in Firebase-hosted Single-Page Applications. You write clean, modular HTML/CSS/JavaScript outlines, describe component behavior and animations in plain language, and ensure pixel-perfect, responsive layouts. You never output full code—only clear instructions, component trees, and styling guidelines.
+
+User prompt (what to ask the assistant to build):
+Hi! I need to improve my existing “remove background” editor feature while keeping all other features exactly as they are. Then I want a modern, responsive landing page (to be hosted on Firebase with Firebase Authentication) that includes:
+
+Header
+
+Logo at left, primary nav links (Home, Features, Pricing, Editor, Login) centered or right-aligned.
+
+“Sign In” / “Sign Up” buttons styled consistently with our color palette.
+
+Hero Section (above the fold)
+
+Prominent heading, concise subheading, call-to-action button (“Get Started – It’s Free”) linking to signup.
+
+Clean illustration or product screenshot on the right.
+
+Subtle entrance animation (fade-in + slide up).
+
+Features Overview
+
+One row of three feature cards (including “Remove Background” as the first card, with a note: “New & improved!”)
+
+Each card: icon on top, title, two-line description, and “Learn More” link.
+
+Flip-card hover effect or gentle scale-up on hover.
+
+Pricing Section
+
+Two pricing cards side by side, equal width, with equal vertical rhythm:
+
+Free Plan
+
+Title: “Free”
+
+Price: “$0 / month”
+
+Benefits list: “5 credits per email ID”
+
+Action button: “Start for Free”
+
+Disabled after credits exhausted (grayed-out state + “Upgrade to Pro” link).
+
+Pro Plan
+
+Title: “Pro”
+
+Price: “$0.50 / month”
+
+Benefits list: “Unlimited background removals + all premium features”
+
+Action button: “Subscribe Now”
+
+Each card animates a gentle lift and shadow on hover.
+
+Editor Page Layout
+
+Flexible, two-column canvas:
+
+Left pane: tool palette with icons for each editing feature (including improved “Remove Background”).
+
+Right pane: live preview area, 100% width within pane, with draggable/resizable controls overlay.
+
+Top toolbar: “Undo/Redo,” “Zoom In/Out,” “Save to Cloud” (Firebase).
+
+Bottom status bar: file name, current zoom level, loading indicator.
+
+Subtle UI animations:
+
+Toolbar icons subtly pulse on hover.
+
+Background-removal progress shows an animated spinner that morphs into a checkmark when done.
+
+Draggable controls highlight when hovered.
+
+Footer
+
+Four columns:
+
+Logo + short tagline.
+
+Quick links: Home, Features, Pricing, Editor.
+
+Resources: Help Center, Docs, Blog, Contact.
+
+Social icons (Twitter, GitHub, LinkedIn).
+
+Legal notes at bottom: copyright + Terms & Privacy.
+
+Global Requirements
+
+Use exactly the existing color palette (do not change or add any colors).
+
+Fully responsive: mobile (single column), tablet (two columns), desktop (four columns where applicable).
+
+Font hierarchy: H1–H4 scale, body text at 16 px, buttons at 14 px.
+
+Spacing and alignment: use 8 px baseline grid.
+
+Accessibility: all interactive elements keyboard-focusable, alt text for images, sufficient contrast (as per existing palette).
+
+Host on Firebase with Firebase Auth for login gating—after sign-up, users must verify their email before accessing editor features; throttle Free-plan credits via Cloud Functions.
+
+End of prompt.
