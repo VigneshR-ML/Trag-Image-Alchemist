@@ -12,7 +12,7 @@ def remove_background(input_path, output_path, bg_color=None):
     Args:
         input_path: Path to input image
         output_path: Path to save output image
-        bg_color: Background color in hex format (e.g., '#FF0000') or None for transparent
+        bg_color: Background color in hex format (e.g., '#FF0000') or None/transparent for transparent
     """
     with open(input_path, 'rb') as f:
         img_data = f.read()
@@ -20,8 +20,8 @@ def remove_background(input_path, output_path, bg_color=None):
     # Remove background with rembg
     output_data = rembg.remove(img_data)
     
-    # If a background color is specified, apply it
-    if bg_color:
+    # If a background color is specified and it's not "transparent", apply it
+    if bg_color and bg_color.lower() != "transparent":
         img = Image.open(io.BytesIO(output_data)).convert("RGBA")
         background = Image.new("RGBA", img.size, bg_color)
         background.paste(img, (0, 0), img)

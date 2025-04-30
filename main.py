@@ -158,7 +158,10 @@ def process_image():
         operation = data.get('operation')
         params = data.get('params', {})
         
+        logging.debug(f"Processing image. Operation: {operation}, Params: {params}")
+        
         if 'current_image' not in session:
+            logging.error("No image in session to process")
             return jsonify({'error': 'No image to process'}), 400
         
         input_path = session['current_image']
@@ -177,6 +180,7 @@ def process_image():
         # Process image based on operation
         if operation == 'remove_background':
             background_color = params.get('color', None)
+            logging.debug(f"Removing background with color: {background_color}")
             remove_background(input_path, output_path, background_color)
         
         elif operation == 'enhance':
