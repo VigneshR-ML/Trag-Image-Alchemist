@@ -276,6 +276,7 @@ body {
   flex-direction: column;
   height: calc(100vh - 80px);
   background-color: var(--background-color);
+  margin-bottom: 4rem; /* Add space at the bottom to prevent overlap with footer */
 }
 
 .editor-header {
@@ -318,6 +319,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+  z-index: 10; /* Higher z-index to ensure content appears above footer */
 }
 
 .tool-section {
@@ -464,6 +467,8 @@ body {
 .footer {
   background-color: var(--light-bg);
   padding: 3rem 0;
+  position: relative;
+  z-index: 1;
 }
 
 .footer-logo {
