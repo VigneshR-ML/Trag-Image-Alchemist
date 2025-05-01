@@ -51,6 +51,16 @@ except Exception as e:
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 
+# Clear upload folder on startup
+try:
+    for file in os.listdir(UPLOAD_FOLDER):
+        file_path = os.path.join(UPLOAD_FOLDER, file)
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
+    logging.info(f"Cleared upload folder: {UPLOAD_FOLDER}")
+except Exception as e:
+    logging.error(f"Error clearing upload folder: {str(e)}")
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -237,7 +247,8 @@ def process_image():
             
         elif operation == 'filter':
             filter_type = params.get('type', 'none')
-            apply_filter(input_path, output_path, filter_type)
+            intensity = int(params.get('intensity', 100))
+            apply_filter(input_path, output_path, filter_type, intensity)
         
         else:
             return jsonify({'error': f'Unknown operation: {operation}'}), 400

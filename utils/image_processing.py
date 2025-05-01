@@ -1,35 +1,52 @@
 import io
 import cv2
 import numpy as np
-from PIL import Image, ImageEnhance, ImageFilter, ImageOps, ImageDraw
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps, ImageDraw, ImageColor
 import rembg
 import os
 
-def remove_background(input_path, output_path, bg_color=None):
+def remove_background(input_image, output_path, bg_color=None):
     """
-    Remove background from an image and optionally replace with a color
+    Remove background from an image and optionally replace with a color.
     
     Args:
-        input_path: Path to input image
+        input_image: Path to input image or PIL Image object
         output_path: Path to save output image
-        bg_color: Background color in hex format (e.g., '#FF0000') or None/transparent for transparent
+        bg_color: Background color (hex string, color name, or RGB tuple), or None/'transparent' for transparent
     """
-    with open(input_path, 'rb') as f:
-        img_data = f.read()
+    # Accept both file path and PIL Image
+    if isinstance(input_image, Image.Image):
+        with io.BytesIO() as buf:
+            input_image.save(buf, format='PNG')
+            img_data = buf.getvalue()
+    else:
+        with open(input_image, 'rb') as f:
+            img_data = f.read()
     
     # Remove background with rembg
     output_data = rembg.remove(img_data)
+    img = Image.open(io.BytesIO(output_data)).convert("RGBA")
     
     # If a background color is specified and it's not "transparent", apply it
-    if bg_color and bg_color.lower() != "transparent":
-        img = Image.open(io.BytesIO(output_data)).convert("RGBA")
-        background = Image.new("RGBA", img.size, bg_color)
+    if bg_color and str(bg_color).lower() != "transparent":
+        # Parse color (accepts hex, color name, or tuple)
+        try:
+            if isinstance(bg_color, tuple):
+                color = bg_color
+            else:
+                color = ImageColor.getrgb(bg_color)
+        except Exception:
+            color = (255, 255, 255, 255)  # fallback to white
+        
+        # If color is RGB, add alpha
+        if len(color) == 3:
+            color = (*color, 255)
+        background = Image.new("RGBA", img.size, color)
         background.paste(img, (0, 0), img)
         background.save(output_path)
     else:
         # Save with transparent background
-        with open(output_path, 'wb') as f:
-            f.write(output_data)
+        img.save(output_path)
 
 def enhance_image_quality(input_path, output_path):
     """
@@ -381,93 +398,116 @@ def apply_sharpen(input_path, output_path, amount=1.5):
     
     img.save(output_path)
 
-def apply_filter(input_path, output_path, filter_type):
+def apply_filter(input_path, output_path, filter_type, intensity=100):
     """
-    Apply various filter effects to image
+    Apply various filter effects to image with intensity control
     
     Args:
         input_path: Path to input image
         output_path: Path to save output image
-        filter_type: Type of filter to apply ('sepia', 'vintage', 'cool', 'warm', etc.)
+        filter_type: Type of filter to apply
+        intensity: Filter intensity (0-100)
     """
     img = Image.open(input_path)
     
     # Preserve alpha channel if present
     has_alpha = 'A' in img.mode
     alpha = None
-    
     if has_alpha:
-        # Extract alpha channel
         alpha = img.split()[3]
     
     # Convert to RGB for consistent processing
     img = img.convert('RGB')
     
-    if filter_type == 'sepia':
-        # Apply sepia filter
-        sepia_filter = (
-            1.2, 0.87, 0.54,  # R
-            0.66, 0.86, 0.47,  # G
-            0.2, 0.43, 0.8   # B
-        )
-        img = img.convert('RGB', sepia_filter)
-    
-    elif filter_type == 'vintage':
-        # Vintage effect (slight sepia + vignette)
-        sepia_light = (
-            1.1, 0.75, 0.39,  # R
-            0.58, 0.9, 0.35,  # G
-            0.18, 0.38, 0.85   # B
-        )
-        img = img.convert('RGB', sepia_light)
+    # Calculate blend factor from intensity (0-100)
+    # Reverse the blend calculation so higher intensity means stronger filter
+    blend = 1 - ((100 - intensity) / 100.0)  # New calculation
+
+    # Define filter matrices (3x4 matrices = 12 elements each)
+    filter_matrices = {
+        'sepia': [
+            0.393, 0.769, 0.189, 0,
+            0.349, 0.686, 0.168, 0,
+            0.272, 0.534, 0.131, 0
+        ],
+        'cool': [
+            0.8, 0.1, 0.1, 0,
+            0.1, 0.9, 0.1, 0,
+            0.1, 0.1, 1.2, 0
+        ],
+        'warm': [
+            1.2, 0.1, 0.1, 0,
+            0.1, 1.0, 0.1, 0,
+            0.1, 0.1, 0.7, 0
+        ],
+        'vintage': [
+            0.9, 0.5, 0.1, 0,
+            0.3, 0.8, 0.1, 0,
+            0.2, 0.3, 0.7, 0
+        ],
+        'dramatic': [
+            1.5, -0.2, -0.2, 0,
+            -0.2, 1.5, -0.2, 0,
+            -0.2, -0.2, 1.5, 0
+        ],
+        'cinema': [
+            1.1, -0.1, 0.1, 0,
+            0.0, 1.1, 0.1, 0,
+            -0.1, 0.1, 1.0, 0
+        ],
+        'chrome': [
+            1.2, -0.1, -0.1, 0,
+            -0.1, 1.2, -0.1, 0,
+            -0.1, -0.1, 1.2, 0
+        ],
+        'fade': [
+            0.95, 0.05, 0.05, 0.1,
+            0.05, 0.95, 0.05, 0.1,
+            0.05, 0.05, 0.95, 0.1
+        ]
+    }
+
+    if filter_type in filter_matrices:
+        # Get the filter matrix
+        filter_matrix = filter_matrices[filter_type]
         
-        # Add contrast
-        enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.1)
+        # Identity matrix for blending
+        identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]
         
-        # Add vignette
-        width, height = img.size
-        mask = Image.new('L', (width, height), 255)
-        draw = ImageDraw.Draw(mask)
-        for i in range(15):
-            box_x = int(width * i/30)
-            box_y = int(height * i/30)
-            box_w = width - 2 * box_x
-            box_h = height - 2 * box_y
-            draw.rectangle([(box_x, box_y), (box_x + box_w, box_y + box_h)], 
-                           fill=255 - i * 8)
-        img = Image.composite(img, Image.new('RGB', img.size, (60, 35, 20)), mask)
-    
-    elif filter_type == 'cool':
-        # Cool temperature filter (blue tint)
-        cool_filter = (
-            0.8, 0.1, 0.1,  # R
-            0.1, 0.9, 0.1,  # G
-            0.1, 0.1, 1.2   # B
-        )
-        img = img.convert('RGB', cool_filter)
-    
-    elif filter_type == 'warm':
-        # Warm temperature filter (yellow/red tint)
-        warm_filter = (
-            1.2, 0.1, 0.1,  # R
-            0.1, 1.0, 0.1,  # G
-            0.1, 0.1, 0.7   # B
-        )
-        img = img.convert('RGB', warm_filter)
+        # Blend between identity and filter matrix
+        matrix = [
+            (f * blend + i * (1 - blend))
+            for f, i in zip(filter_matrix, identity)
+        ]
+        
+        # Apply the blended matrix
+        img = img.convert('RGB', matrix)
     
     elif filter_type == 'grayscale':
-        # Grayscale
-        img = ImageOps.grayscale(img)
-        img = img.convert('RGB')
+        # Special handling for grayscale
+        gray = img.convert('L')
+        if blend < 1:
+            img = Image.blend(img, gray.convert('RGB'), blend)
+        else:
+            img = gray.convert('RGB')
     
+    elif filter_type == 'invert':
+        # Special handling for invert
+        inv = ImageOps.invert(img)
+        if blend < 1:
+            img = Image.blend(img, inv, blend)
+        else:
+            img = inv
+
     elif filter_type == 'high_contrast':
-        # High contrast B&W
-        img = ImageOps.grayscale(img)
+        # High contrast with blend
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(2.0)
-        img = img.convert('RGB')
-    
+        contrast_img = enhancer.enhance(2.0)
+        if blend < 1:
+            img = Image.blend(img, contrast_img, blend)
+        else:
+            img = contrast_img
+
     # Reapply alpha channel if needed
     if has_alpha and alpha is not None:
         r, g, b = img.split()

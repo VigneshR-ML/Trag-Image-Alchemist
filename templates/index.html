@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Image Editor - Image Editor Pro{% endblock %}
+{% block title %}Image Editor - Trag Image Alchemist{% endblock %}
 
 {% block head %}
 <style>
@@ -49,6 +49,12 @@
         <div class="editor-header">
             <h1 class="editor-title">Image Editor</h1>
             <div class="editor-actions">
+                <button id="undo-button" class="btn btn-outline-secondary me-2" disabled>
+                    <i class="fas fa-undo-alt me-1"></i> Undo
+                </button>
+                <button id="redo-button" class="btn btn-outline-secondary me-2" disabled>
+                    <i class="fas fa-redo-alt me-1"></i> Redo
+                </button>
                 <button id="reset-button" class="btn btn-outline-secondary me-2">
                     <i class="fas fa-undo me-1"></i> Reset
                 </button>
@@ -157,6 +163,8 @@
     </div>
 </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>

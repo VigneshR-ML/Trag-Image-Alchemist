@@ -3,6 +3,10 @@
 let currentImage = null;
 let isProcessing = false;
 
+// --- Undo/Redo stacks ---
+let undoStack = [];
+let redoStack = [];
+
 document.addEventListener('DOMContentLoaded', function() {
   // DOM elements
   const uploadForm = document.getElementById('upload-form');
@@ -15,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const downloadButton = document.getElementById('download-button');
   const toolButtons = document.querySelectorAll('.tool-btn');
   const controlsContainer = document.getElementById('controls-container');
+  const undoButton = document.getElementById('undo-button');
+  const redoButton = document.getElementById('redo-button');
   
   // Setup drag and drop
   if (uploadContainer) {
@@ -87,6 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Clear controls
             controlsContainer.innerHTML = '';
+            
+            // Clear undo/redo stacks
+            onImageLoaded(data.url);
           } else {
             showAlert(data.error || 'Error uploading image', 'danger');
           }
@@ -137,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (data.success) {
           previewImg.src = data.url;
-          currentImage = data.url;
+          onImageLoaded(data.url); // <-- clear undo/redo
           
           // Reset active tool
           toolButtons.forEach(btn => btn.classList.remove('active'));
@@ -145,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
           // Clear controls
           controlsContainer.innerHTML = '';
           
-          showAlert('Image has been reset', 'success');
         } else {
           showAlert(data.error || 'Error resetting image', 'danger');
         }
@@ -170,10 +178,61 @@ document.addEventListener('DOMContentLoaded', function() {
       a.click();
       document.body.removeChild(a);
       
-      showAlert('Image downloaded successfully', 'success');
     });
   }
   
+  // Utility: update undo/redo button state
+  function updateUndoRedoButtons() {
+    if (undoButton) undoButton.disabled = undoStack.length === 0;
+    if (redoButton) redoButton.disabled = redoStack.length === 0;
+  }
+
+  // Utility: push current image to undo stack
+  function pushUndo() {
+    if (currentImage) {
+      undoStack.push(currentImage);
+      // Limit stack size if needed
+      if (undoStack.length > 20) undoStack.shift();
+      redoStack = [];
+      updateUndoRedoButtons();
+    }
+  }
+
+  // Undo action
+  function undo() {
+    if (undoStack.length === 0) return;
+    redoStack.push(currentImage);
+    currentImage = undoStack.pop();
+    previewImg.src = currentImage;
+    updateUndoRedoButtons();
+    // Optionally clear controls
+    controlsContainer.innerHTML = '';
+  }
+
+  // Redo action
+  function redo() {
+    if (redoStack.length === 0) return;
+    undoStack.push(currentImage);
+    currentImage = redoStack.pop();
+    previewImg.src = currentImage;
+    updateUndoRedoButtons();
+    controlsContainer.innerHTML = '';
+  }
+
+  // Wire up Undo/Redo buttons
+  if (undoButton) {
+    undoButton.addEventListener('click', function() {
+      if (isProcessing) return;
+      undo();
+    });
+  }
+  if (redoButton) {
+    redoButton.addEventListener('click', function() {
+      if (isProcessing) return;
+      redo();
+    });
+  }
+
   // Function to show tool-specific controls
   function showToolControls(tool) {
     controlsContainer.innerHTML = '';
@@ -527,6 +586,21 @@ document.addEventListener('DOMContentLoaded', function() {
               <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="warm">Warm</button>
               <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="grayscale">Grayscale</button>
               <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="high_contrast">High Contrast</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="nostalgia">Nostalgia</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="dramatic">Dramatic</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="cinema">Cinema</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="chrome">Chrome</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="fade">Fade</button>
+              <button class="btn btn-secondary mr-2 mb-2 filter-option" data-filter="invert">Invert</button>
+            </div>
+          </div>
+          <div class="control-group mt-3" id="filter-intensity-control" style="display: none;">
+            <label class="control-label">Filter Intensity</label>
+            <input type="range" id="filter-intensity" class="control-slider" min="0" max="100" value="100" step="1">
+            <div class="d-flex justify-content-between">
+              <span>Subtle</span>
+              <span id="intensity-value">100%</span>
+              <span>Strong</span>
             </div>
           </div>
         `;
@@ -537,8 +611,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isProcessing) return;
             
             const filter = this.dataset.filter;
+            const intensityControl = document.getElementById('filter-intensity-control');
             
+            // Show/hide intensity slider based on filter selection
             if (filter === 'none') {
+              intensityControl.style.display = 'none';
               // Reset to original instead of applying a filter
               fetch('/reset', {
                 method: 'POST',
@@ -550,16 +627,65 @@ document.addEventListener('DOMContentLoaded', function() {
               .then(data => {
                 if (data.success) {
                   previewImg.src = data.url;
-                  currentImage = data.url;
+                  onImageLoaded(data.url);
                 } else {
                   showAlert(data.error || 'Error resetting image', 'danger');
                 }
               });
             } else {
-              processImage('filter', { type: filter });
+              intensityControl.style.display = 'block';
+              const intensity = document.getElementById('filter-intensity').value;
+              processImage('filter', { type: filter, intensity: intensity });
             }
+            
+            // Update active state
+            document.querySelectorAll('.filter-option').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
           });
         });
+        
+        // Intensity slider
+        const intensitySlider = document.getElementById('filter-intensity');
+        const intensityValue = document.getElementById('intensity-value');
+        
+        if (intensitySlider && intensityValue) {
+          let isAdjusting = false;  // Prevent multiple simultaneous adjustments
+          
+          intensitySlider.addEventListener('input', function() {
+            if (isAdjusting) return;
+            isAdjusting = true;
+            
+            intensityValue.textContent = this.value + '%';
+            
+            // Apply filter with new intensity if a filter is selected
+            const activeFilter = document.querySelector('.filter-option.active');
+            if (activeFilter && activeFilter.dataset.filter !== 'none') {
+              // First reset to original
+              fetch('/reset', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  // Then apply new filter with current intensity
+                  processImage('filter', { 
+                    type: activeFilter.dataset.filter, 
+                    intensity: intensitySlider.value 
+                  });
+                }
+                isAdjusting = false;
+              })
+              .catch(() => {
+                isAdjusting = false;
+              });
+            } else {
+              isAdjusting = false;
+            }
+          });
+        }
         break;
         
       case 'bw':
@@ -701,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function processImage(operation, params = {}) {
     if (isProcessing || !currentImage) return;
     
+    pushUndo(); // Save state before processing
     isProcessing = true;
     const hideLoading = showLoading('Processing image...');
     
@@ -724,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
         previewImg.src = data.url + '?t=' + new Date().getTime(); // Add timestamp to prevent caching
         currentImage = data.url;
         
-        showAlert('Image processed successfully', 'success');
+        updateUndoRedoButtons();
       } else {
         showAlert(data.error || 'Error processing image', 'danger');
       }
@@ -734,5 +861,13 @@ document.addEventListener('DOMContentLoaded', function() {
       isProcessing = false;
       showAlert('Error processing image: ' + error.message, 'danger');
     });
+  }
+
+  // After image upload or reset, clear stacks
+  function onImageLoaded(newUrl) {
+    currentImage = newUrl;
+    undoStack = [];
+    redoStack = [];
+    updateUndoRedoButtons();
   }
 });

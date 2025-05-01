@@ -314,6 +314,10 @@ body {
   gap: 0.5rem;
 }
 
+.editor-actions .btn {
+  margin-right: 0.5rem;
+}
+
 .editor-main {
   display: flex;
   flex: 1;
@@ -489,11 +493,7 @@ body {
 }
 
 .footer-logo {
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
-  display: inline-block;
+  display: flex;
 }
 
 .footer-tagline {
@@ -850,4 +850,90 @@ input[type="range"]::-moz-range-thumb {
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(31, 41, 55, 0.7); /* matches --background-color with opacity */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  pointer-events: all;
+}
+
+.loading-overlay .loading-content {
+  background: rgba(34, 41, 55, 0.95);
+  color: var(--text-color);
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius);
+  font-size: 1.25rem;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 60px; /* Maintains navbar height */
+  overflow: hidden;
+}
+
+.logo-img {
+  height: 180px; /* Your desired logo height */
+  width: auto;
+  object-fit: contain;
+}
+
+/* FAQ Section */
+.faq {
+  padding: 5rem 0;
+  background-color: var(--light-bg);
+}
+
+.accordion-item {
+  background-color: var(--background-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.accordion-button {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-weight: 500;
+  border: none;
+  padding: 1.25rem;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: rgba(74, 108, 247, 0.1);
+  color: var(--primary-color);
+}
+
+.accordion-button::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:not(.collapsed)::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%234a6cf7'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(74, 108, 247, 0.25);
+  border-color: var(--primary-color);
+}
+
+.accordion-body {
+  background-color: var(--background-color);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 1.25rem;
+  line-height: 1.6;
 }
