@@ -1,9 +1,6 @@
-name: Deploy to Firebase
+name: Deploy to Firebase Hosting
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -11,20 +8,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Deploy to Live Channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          node-version: '18'
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Deploy to Firebase Hosting
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRAG_IMAGE_ALCHEMIST }}
-        run: |
-          # No build step needed—static/ already contains your CSS/JS/assets
-          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          repoToken: ${{ secrets.GITHUB_TOKEN }}       # for PR comments, optional
+          channelId: live                              # deploys to live hosting channel
+          projectId: trag-image-alchemist              # your Firebase project ID :contentReference[oaicite:0]{index=0}
