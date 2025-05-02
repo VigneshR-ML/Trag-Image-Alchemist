@@ -1,4 +1,5 @@
 name: Deploy to Cloud Run and Firebase
+
 on:
   push:
     branches: [ main ]
@@ -22,6 +23,14 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
+          cleanup_credentials: true
+          access_token_lifetime: 3600s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+          retries: 3
+          backoff: 250
+          id_token_include_email: false
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
@@ -51,6 +60,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRAG_IMAGE_ALCHEMIST }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: ${{ github.event_name == 'push' && 'live' || '' }}
           projectId: trag-image-alchemist
