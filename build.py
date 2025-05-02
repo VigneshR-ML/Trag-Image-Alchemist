@@ -1,6 +1,7 @@
 import os
 import shutil
 import re
+from jinja2 import Environment, FileSystemLoader
 
 # Define directories
 BUILD_DIR     = 'build'
@@ -21,20 +22,23 @@ def copy_static_files():
         if os.path.exists(src):
             shutil.copytree(src, dst)
 
-def copy_templates():
-    """Copy and (if desired) rename templates into build/"""
-    mapping = {
-        'landing.html': 'index.html',  # root
-        'index.html':   'editor.html',
-        'pricing.html': 'pricing.html',
-        'success.html': 'success.html',
-        '404.html':     '404.html'
-    }
-    for src_name, dst_name in mapping.items():
-        src = os.path.join(TEMPLATES_DIR, src_name)
-        dst = os.path.join(BUILD_DIR, dst_name)
-        if os.path.exists(src):
-            shutil.copy2(src, dst)
+def render_templates():
+    """Render all Jinja templates to static HTML in build/."""
+    env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+    for fname in os.listdir(TEMPLATES_DIR):
+        if fname.endswith('.html'):
+            with open(os.path.join(TEMPLATES_DIR, fname), 'r', encoding='utf-8') as f:
+                raw = f.read()
+            # Replace Flask static references before rendering
+            raw = re.sub(
+                r"\{\{\s*url_for\(['\"]static['\"],\s*filename=['\"]([^'\"]+)['\"]\)\s*\}\}",
+                r"/static/\1",
+                raw
+            )
+            template = env.from_string(raw)
+            rendered = template.render(stripe_pk="pk_test_51A2XmONCbZx4JtzJIsWvWgOFm2z5z0GZbhM5qg9W7OZiJ6VJ6l0mZKpwBOYQxX5xSvO0vTmRX5SXc5Wn5pUcQkQk00LRdCCi5R")
+            with open(os.path.join(BUILD_DIR, fname), 'w', encoding='utf-8') as f:
+                f.write(rendered)
 
 def fix_static_references():
     """Replace Flask static references with direct /static/... paths in HTML files."""
@@ -55,8 +59,12 @@ def fix_static_references():
 def main():
     create_build_dir()
     copy_static_files()
-    copy_templates()
+    render_templates()
     fix_static_references()
+    # Check for CSS existence
+    css_path = os.path.join(BUILD_DIR, 'static', 'css', 'style.css')
+    if not os.path.exists(css_path):
+        print("WARNING: build/static/css/style.css does not exist! CSS will not load.")
 
 if __name__ == '__main__':
     main()

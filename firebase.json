@@ -1,19 +1,21 @@
 {
   "hosting": {
-    "public": "build",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "public": "static",            
+    "ignore": ["**/.*"],
     "rewrites": [
       {
-        "source": "/editor",
-        "destination": "/editor.html"
+        "source": "/api/**",
+        "run": {
+          "serviceId": "flask-app",
+          "region": "us-central1"
+        }
       },
       {
         "source": "**",
-        "destination": "/index.html"
+        "run": {
+          "serviceId": "flask-app",
+          "region": "us-central1"
+        }
       }
     ]
   }
