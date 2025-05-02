@@ -14,7 +14,6 @@ jsonschema==4.23.0
 jsonschema-specifications==2025.4.1
 lazy_loader==0.4
 MarkupSafe==3.0.2
-networkx==3.4.2
 numba==0.61.2
 numpy==2.2.5
 opencv-python==4.11.0.86
