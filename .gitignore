@@ -9,5 +9,4 @@ dist/
 
 # Build
 build/
-static/
-templates/
+
