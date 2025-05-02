@@ -1,6 +1,4 @@
-# .github/workflows/cloudrun.yml
 name: Build & Deploy Flask to Cloud Run
-
 on:
   push:
     branches: [ main ]
@@ -14,17 +12,21 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
+          # This also sets the gcloud default project internally
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
       - name: Build & Push Docker Image
         run: |
-          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app
+          gcloud builds submit \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy flask-app \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated
