@@ -2,6 +2,9 @@ import os
 import shutil
 import re
 from jinja2 import Environment, FileSystemLoader
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Define directories
 BUILD_DIR     = 'build'
@@ -56,6 +59,30 @@ def fix_static_references():
             with open(fpath, 'w', encoding='utf-8') as f:
                 f.write(content)
 
+def build():
+    """Build static assets for deployment"""
+    static_dir = "static"
+    
+    # Create static directory if it doesn't exist
+    if not os.path.exists(static_dir):
+        os.makedirs(static_dir)
+    
+    # Copy static files
+    static_sources = [
+        "templates",
+        "static/css",
+        "static/js",
+        "static/img"
+    ]
+    
+    for src in static_sources:
+        if os.path.exists(src):
+            dst = os.path.join(static_dir, os.path.basename(src))
+            logging.info(f"Copying {src} to {dst}")
+            if os.path.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+
 def main():
     create_build_dir()
     copy_static_files()
@@ -68,3 +95,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    build()

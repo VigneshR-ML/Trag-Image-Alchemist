@@ -1,15 +1,18 @@
 {
   "hosting": {
-    "public": "static",             
+    "public": "static",
     "ignore": ["**/.*"],
     "rewrites": [
       {
-        "source": "/api/**",
-        "run": { "serviceId": "flask-app", "region": "us-central1" }
+        "source": "/static/**",
+        "destination": "/static/$1"
       },
       {
         "source": "**",
-        "run": { "serviceId": "flask-app", "region": "us-central1" }
+        "run": {
+          "serviceId": "flask-app",
+          "region": "us-central1"
+        }
       }
     ]
   }
