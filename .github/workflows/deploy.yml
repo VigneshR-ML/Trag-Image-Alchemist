@@ -73,7 +73,7 @@ jobs:
             channelId: live
             projectId: trag-image-alchemist
             expires: 7d
-            entryPoint: ./web  # ✅ Set this if firebase.json is in ./web
+            entryPoint: .
             firebaseToolsVersion: latest
       - name: Verify firebase.json exists
         run: |
