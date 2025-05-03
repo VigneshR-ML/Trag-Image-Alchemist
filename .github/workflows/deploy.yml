@@ -68,21 +68,14 @@ jobs:
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: trag-image-alchemist
-          expires: 7d
-          entryPoint: .
-          firebaseToolsVersion: latest
-        env:
-          CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/Trag-Image-Alchemist/Trag-Image-Alchemist/gha-creds-59fda363f891c9c7.json
-          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/Trag-Image-Alchemist/Trag-Image-Alchemist/gha-creds-59fda363f891c9c7.json
-          GOOGLE_GHA_CREDS_PATH: /home/runner/work/Trag-Image-Alchemist/Trag-Image-Alchemist/gha-creds-59fda363f891c9c7.json
-          CLOUDSDK_CORE_PROJECT: trag-image-alchemist
-          CLOUDSDK_PROJECT: trag-image-alchemist
-          GCLOUD_PROJECT: trag-image-alchemist
-          GCP_PROJECT: trag-image-alchemist
-          GOOGLE_CLOUD_PROJECT: trag-image-alchemist
-          CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
-          CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 1.1.1
+            repoToken: ${{ secrets.GITHUB_TOKEN }}
+            firebaseServiceAccount: ${{ secrets.GCP_SA_KEY }}
+            channelId: live
+            projectId: trag-image-alchemist
+            expires: 7d
+            entryPoint: ./web  # ✅ Set this if firebase.json is in ./web
+            firebaseToolsVersion: latest
+      - name: Verify firebase.json exists
+        run: |
+         test -f ./web/firebase.json || (echo "::error::firebase.json not found in ./web"; exit 1)
+    
