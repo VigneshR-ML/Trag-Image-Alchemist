@@ -41,6 +41,13 @@ jobs:
         run: |
           gcloud auth configure-docker --quiet
 
+      - name: Check Cloud Run API enabled
+        run: |
+          if ! gcloud services list --enabled --project=${{ secrets.GCP_PROJECT_ID }} | grep -q run.googleapis.com; then
+            echo "::error::Cloud Run API (run.googleapis.com) is not enabled for this project. Please enable it in the Google Cloud Console."
+            exit 1
+          fi
+
       - name: Build & Deploy to Cloud Run
         run: |
           gcloud builds submit \
