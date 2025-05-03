@@ -48,9 +48,8 @@ jobs:
             --project=${{ secrets.GCP_PROJECT_ID }} \
             --region=global \
             --timeout=1200s \
-            --machine-type=e2-medium \
-            --gcs-log-dir=gs://cloud-build-logs-${{ secrets.GCP_PROJECT_ID }}/ \
-            .
+            --machine-type=e2-medium 
+            
           gcloud run deploy flask-app \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app \
             --platform managed \
