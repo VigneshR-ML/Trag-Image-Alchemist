@@ -43,8 +43,16 @@ jobs:
 
       - name: Build & Deploy to Cloud Run
         run: |
-          gcloud builds submit --no-source \
-            --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app
+          gcloud builds submit \
+            --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --region=global \
+            --timeout=1200s \
+            --machine-type=e2-medium \
+            --config=/dev/null \
+            --substitutions=_DOCKERFILE=Dockerfile \
+            --gcs-log-dir=gs://cloud-build-logs-${{ secrets.GCP_PROJECT_ID }}/ \
+            .
           gcloud run deploy flask-app \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app \
             --platform managed \
