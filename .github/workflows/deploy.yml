@@ -49,7 +49,6 @@ jobs:
             --region=global \
             --timeout=1200s \
             --machine-type=e2-medium \
-            --substitutions=_DOCKERFILE=Dockerfile \
             --gcs-log-dir=gs://cloud-build-logs-${{ secrets.GCP_PROJECT_ID }}/ \
             .
           gcloud run deploy flask-app \
