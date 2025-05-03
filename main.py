@@ -29,7 +29,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 port = int(os.environ.get("PORT", 8080))
 host = "0.0.0.0"
-
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
