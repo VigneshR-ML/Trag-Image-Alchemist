@@ -77,5 +77,5 @@ jobs:
             firebaseToolsVersion: latest
       - name: Verify firebase.json exists
         run: |
-         test -f ./web/firebase.json || (echo "::error::firebase.json not found in ./web"; exit 1)
+         test -f ./firebase.json || (echo "::error::firebase.json not found in ./web"; exit 1)
     
