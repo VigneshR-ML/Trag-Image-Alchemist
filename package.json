@@ -1,9 +1,0 @@
-{
-  "name": "image-alchemist",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "python build.py",
-    "deploy": "python deploy.py",
-    "deploy:preview": "firebase hosting:channel:deploy preview"
-  }
-}

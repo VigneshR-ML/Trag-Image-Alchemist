@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+utils/__pycache__/
 # Node
 node_modules/
 dist/
@@ -10,3 +10,7 @@ dist/
 # Build
 build/
 .venv/
+.firebase/
+
+#folders
+attached_assets/
