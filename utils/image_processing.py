@@ -50,52 +50,78 @@ def remove_background(input_image, output_path, bg_color=None):
 
 def enhance_image_quality(input_path, output_path):
     """
-    Enhance image quality with a single click
+    Enhance image quality without changing colors or lighting
     
     Args:
         input_path: Path to input image
         output_path: Path to save output image
     """
     img = Image.open(input_path)
-    
-    # Preserve the original mode
     original_mode = img.mode
-    
-    # Convert to RGB if needed for enhancements (but preserve RGBA if that's the original)
+
     if original_mode == 'RGBA':
-        # For RGBA images, we need to separate the alpha channel
+        # Handle RGBA images
         r, g, b, a = img.split()
         rgb_img = Image.merge('RGB', (r, g, b))
         
-        # Apply enhancements to the RGB channels
-        rgb_img = ImageEnhance.Contrast(rgb_img).enhance(1.2)
-        rgb_img = ImageEnhance.Brightness(rgb_img).enhance(1.1)
-        rgb_img = ImageEnhance.Sharpness(rgb_img).enhance(1.5)
-        rgb_img = ImageEnhance.Color(rgb_img).enhance(1.2)
-        
-        # Apply sharpening
+        # Apply only sharpening for quality enhancement
         rgb_img = rgb_img.filter(ImageFilter.SHARPEN)
+        rgb_img = ImageEnhance.Sharpness(rgb_img).enhance(1.3)
         
-        # Split the enhanced RGB image
+        # Split and merge back with alpha
         r, g, b = rgb_img.split()
-        
-        # Merge back with the original alpha channel
         img = Image.merge('RGBA', (r, g, b, a))
     else:
-        # For RGB or other modes, apply enhancements directly
-        img = ImageEnhance.Contrast(img).enhance(1.2)
-        img = ImageEnhance.Brightness(img).enhance(1.1)
-        img = ImageEnhance.Sharpness(img).enhance(1.5)
-        img = ImageEnhance.Color(img).enhance(1.2)
+        # Apply quality enhancement
         img = img.filter(ImageFilter.SHARPEN)
+        img = ImageEnhance.Sharpness(img).enhance(1.3)
     
-    # Determine the format based on extension and transparency
+    # Handle format conversion if needed
     ext = os.path.splitext(output_path)[1].lower()
-    if original_mode == 'RGBA' and ext == '.jpg':
-        # If output should be jpg but image has transparency, convert to RGB
+    if original_mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
     
-    # Save with the appropriate format
+    # Save with maximum quality
+    if ext in ('.jpg', '.jpeg'):
+        img.save(output_path, quality=95, optimize=True)
+    else:
+        img.save(output_path)
+
+def auto_adjust(input_path, output_path):
+    """
+    Automatically adjust image settings
+    
+    Args:
+        input_path: Path to input image
+        output_path: Path to save output image
+    """
+    img = Image.open(input_path)
+    original_mode = img.mode
+
+    if original_mode == 'RGBA':
+        # Handle RGBA images
+        r, g, b, a = img.split()
+        rgb_img = Image.merge('RGB', (r, g, b))
+        
+        # Apply auto adjustments
+        rgb_img = ImageEnhance.Contrast(rgb_img).enhance(1.2)
+        rgb_img = ImageEnhance.Brightness(rgb_img).enhance(1.1)
+        rgb_img = ImageEnhance.Color(rgb_img).enhance(1.2)
+        
+        # Split and merge back with alpha
+        r, g, b = rgb_img.split()
+        img = Image.merge('RGBA', (r, g, b, a))
+    else:
+        # Apply auto adjustments
+        img = ImageEnhance.Contrast(img).enhance(1.2)
+        img = ImageEnhance.Brightness(img).enhance(1.1)
+        img = ImageEnhance.Color(img).enhance(1.2)
+    
+    # Handle format conversion if needed
+    ext = os.path.splitext(output_path)[1].lower()
+    if original_mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
+        img = img.convert('RGB')
+    
     img.save(output_path)
 
 def resize_image(input_path, output_path, width, height):
@@ -280,18 +306,28 @@ def compress_image(input_path, output_path, quality):
         quality: JPEG quality (0-100)
     """
     img = Image.open(input_path)
-    
-    # Determine the output format based on the extension
     ext = os.path.splitext(output_path)[1].lower()
-    
+
     if ext in ('.jpg', '.jpeg'):
         # JPEG doesn't support transparency, convert if needed
         if img.mode == 'RGBA':
             img = img.convert('RGB')
-        img.save(output_path, format='JPEG', quality=int(quality), optimize=True)
+        # Use optimize and progressive for better compression
+        img.save(
+            output_path,
+            format='JPEG',
+            quality=max(85, min(int(quality), 95)),  # Clamp to 85-95 for visually lossless
+            optimize=True,
+            progressive=True
+        )
     elif ext == '.png':
-        # For PNG, use optimize only
-        img.save(output_path, format='PNG', optimize=True)
+        # For PNG, quantize if possible for smaller size, then optimize
+        if img.mode in ('RGBA', 'RGB'):
+            # Quantize to 256 colors if not already palette
+            img_quant = img.convert('P', palette=Image.ADAPTIVE, colors=256)
+            img_quant.save(output_path, format='PNG', optimize=True)
+        else:
+            img.save(output_path, format='PNG', optimize=True)
     else:
         # Default fallback - handle transparency for other formats
         if img.mode == 'RGBA' and ext not in ('.png', '.tiff', '.webp'):

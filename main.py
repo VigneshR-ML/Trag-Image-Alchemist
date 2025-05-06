@@ -20,7 +20,8 @@ from utils.image_processing import (
     apply_black_white,
     apply_blur,
     apply_sharpen,
-    apply_filter
+    apply_filter,
+    auto_adjust  # Add this import
 )
 
 # Configure logging
@@ -198,6 +199,9 @@ def process_image():
         
         elif operation == 'enhance':
             enhance_image_quality(input_path, output_path)
+            
+        elif operation == 'auto_adjust':
+            auto_adjust(input_path, output_path)
         
         elif operation == 'resize':
             width = params.get('width')

@@ -251,6 +251,24 @@ document.addEventListener('DOMContentLoaded', function() {
     controlsContainer.innerHTML = '';
     
     switch (tool) {
+      case 'auto_adjust':
+        controlsContainer.innerHTML = `
+          <div class="alert alert-info mb-3">
+            This will automatically adjust your image's brightness, contrast, and color settings.
+          </div>
+          <button id="apply-auto-adjust" class="btn btn-primary">Auto Adjust</button>
+        `;
+        
+        // Apply button
+        const autoAdjustButton = document.getElementById('apply-auto-adjust');
+        if (autoAdjustButton) {
+          autoAdjustButton.addEventListener('click', function() {
+            if (isProcessing) return;
+            processImage('auto_adjust');
+          });
+        }
+        break;
+        
       case 'remove-background':
         controlsContainer.innerHTML = `
           <div class="control-group">
