@@ -24,15 +24,3 @@ EXPOSE 8080
 
 # Run the app
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "main:app"]
-
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM node:20-alpine
-WORKDIR /app
-COPY --from=builder /app .
-CMD ["npm", "start"]
