@@ -233,6 +233,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Add debounce utility at the top level
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
   // Function to show tool-specific controls
   function showToolControls(tool) {
     controlsContainer.innerHTML = '';
@@ -441,7 +454,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>Bright</span>
             </div>
           </div>
-          <button id="apply-brightness" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Brightness slider
@@ -449,19 +461,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const brightnessValue = document.getElementById('brightness-value');
         
         if (brightnessSlider && brightnessValue) {
+          const updateBrightness = debounce((value) => {
+            if (!isProcessing) {
+              processImage('brightness', { factor: value });
+            }
+          }, 100);
+
           brightnessSlider.addEventListener('input', function() {
             brightnessValue.textContent = parseFloat(this.value).toFixed(2);
-          });
-        }
-        
-        // Apply button
-        const brightnessButton = document.getElementById('apply-brightness');
-        if (brightnessButton) {
-          brightnessButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const factor = document.getElementById('brightness-slider').value;
-            processImage('brightness', { factor: factor });
+            updateBrightness(this.value);
           });
         }
         break;
@@ -477,7 +485,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>High</span>
             </div>
           </div>
-          <button id="apply-contrast" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Contrast slider
@@ -485,19 +492,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const contrastValue = document.getElementById('contrast-value');
         
         if (contrastSlider && contrastValue) {
+          const updateContrast = debounce((value) => {
+            if (!isProcessing) {
+              processImage('contrast', { factor: value });
+            }
+          }, 100);
+
           contrastSlider.addEventListener('input', function() {
             contrastValue.textContent = parseFloat(this.value).toFixed(2);
-          });
-        }
-        
-        // Apply button
-        const contrastButton = document.getElementById('apply-contrast');
-        if (contrastButton) {
-          contrastButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const factor = document.getElementById('contrast-slider').value;
-            processImage('contrast', { factor: factor });
+            updateContrast(this.value);
           });
         }
         break;
@@ -513,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>Vivid</span>
             </div>
           </div>
-          <button id="apply-saturation" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Saturation slider
@@ -521,19 +523,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const saturationValue = document.getElementById('saturation-value');
         
         if (saturationSlider && saturationValue) {
+          const updateSaturation = debounce((value) => {
+            if (!isProcessing) {
+              processImage('saturation', { factor: value });
+            }
+          }, 100);
+
           saturationSlider.addEventListener('input', function() {
             saturationValue.textContent = parseFloat(this.value).toFixed(2);
-          });
-        }
-        
-        // Apply button
-        const saturationButton = document.getElementById('apply-saturation');
-        if (saturationButton) {
-          saturationButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const factor = document.getElementById('saturation-slider').value;
-            processImage('saturation', { factor: factor });
+            updateSaturation(this.value);
           });
         }
         break;
@@ -549,7 +547,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>360°</span>
             </div>
           </div>
-          <button id="apply-hue" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Hue slider
@@ -557,19 +554,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const hueValue = document.getElementById('hue-value');
         
         if (hueSlider && hueValue) {
+          const updateHue = debounce((value) => {
+            if (!isProcessing) {
+              processImage('hue', { factor: value });
+            }
+          }, 100);
+
           hueSlider.addEventListener('input', function() {
             hueValue.textContent = this.value + '°';
-          });
-        }
-        
-        // Apply button
-        const hueButton = document.getElementById('apply-hue');
-        if (hueButton) {
-          hueButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const factor = document.getElementById('hue-slider').value;
-            processImage('hue', { factor: factor });
+            updateHue(this.value);
           });
         }
         break;
@@ -717,7 +710,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>Max</span>
             </div>
           </div>
-          <button id="apply-blur" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Blur slider
@@ -725,19 +717,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const blurValue = document.getElementById('blur-value');
         
         if (blurSlider && blurValue) {
+          const updateBlur = debounce((value) => {
+            if (!isProcessing) {
+              processImage('blur', { amount: value });
+            }
+          }, 100);
+
           blurSlider.addEventListener('input', function() {
             blurValue.textContent = parseFloat(this.value).toFixed(1);
-          });
-        }
-        
-        // Apply button
-        const blurButton = document.getElementById('apply-blur');
-        if (blurButton) {
-          blurButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const amount = document.getElementById('blur-slider').value;
-            processImage('blur', { amount: amount });
+            updateBlur(this.value);
           });
         }
         break;
@@ -753,7 +741,6 @@ document.addEventListener('DOMContentLoaded', function() {
               <span>Max</span>
             </div>
           </div>
-          <button id="apply-sharpen" class="btn btn-primary mt-3">Apply</button>
         `;
         
         // Sharpen slider
@@ -761,19 +748,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const sharpenValue = document.getElementById('sharpen-value');
         
         if (sharpenSlider && sharpenValue) {
+          const updateSharpen = debounce((value) => {
+            if (!isProcessing) {
+              processImage('sharpen', { amount: value });
+            }
+          }, 100);
+
           sharpenSlider.addEventListener('input', function() {
             sharpenValue.textContent = parseFloat(this.value).toFixed(1);
-          });
-        }
-        
-        // Apply button
-        const sharpenButton = document.getElementById('apply-sharpen');
-        if (sharpenButton) {
-          sharpenButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const amount = document.getElementById('sharpen-slider').value;
-            processImage('sharpen', { amount: amount });
+            updateSharpen(this.value);
           });
         }
         break;
@@ -792,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="alert alert-info mt-3">
             Lower quality results in smaller file size.
           </div>
-          <button id="apply-compress" class="btn btn-primary mt-3">Compress Image</button>
         `;
         
         // Quality slider
@@ -800,19 +782,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const qualityValue = document.getElementById('quality-value');
         
         if (qualitySlider && qualityValue) {
+          const updateQuality = debounce((value) => {
+            if (!isProcessing) {
+              processImage('compress', { quality: value });
+            }
+          }, 100);
+
           qualitySlider.addEventListener('input', function() {
             qualityValue.textContent = this.value + '%';
-          });
-        }
-        
-        // Apply button
-        const compressButton = document.getElementById('apply-compress');
-        if (compressButton) {
-          compressButton.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const quality = document.getElementById('quality-slider').value;
-            processImage('compress', { quality: quality });
+            updateQuality(this.value);
           });
         }
         break;
