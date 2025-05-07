@@ -2,6 +2,7 @@ import os
 import logging
 import uuid
 import stripe
+import time
 from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -179,7 +180,18 @@ def process_image():
             return jsonify({'error': 'No image to process'}), 400
         
         input_path = session['current_image']
-        
+
+        # --- Wait for file to exist before processing (fixes race condition) ---
+        max_wait = 8  # seconds
+        waited = 0
+        while not os.path.exists(input_path) and waited < max_wait:
+            logging.warning(f"Waiting for file to exist: {input_path}")
+            time.sleep(0.5)
+            waited += 0.5
+        if not os.path.exists(input_path):
+            logging.error(f"File not found after waiting: {input_path}")
+            return jsonify({'error': f'No such file or directory: {input_path}'}), 404
+
         # Generate a new filename for the processed image
         # Always use .png for operations that may result in transparency
         input_ext = input_path.rsplit('.', 1)[1].lower()
