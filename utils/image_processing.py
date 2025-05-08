@@ -43,10 +43,10 @@ def remove_background(input_image, output_path, bg_color=None):
             color = (*color, 255)
         background = Image.new("RGBA", img.size, color)
         background.paste(img, (0, 0), img)
-        background.save(output_path)
+        save_image_with_format_compatibility(background, output_path)
     else:
         # Save with transparent background
-        img.save(output_path)
+        save_image_with_format_compatibility(img, output_path)
 
 def enhance_image_quality(input_path, output_path):
     """
@@ -76,16 +76,7 @@ def enhance_image_quality(input_path, output_path):
         img = img.filter(ImageFilter.SHARPEN)
         img = ImageEnhance.Sharpness(img).enhance(1.3)
     
-    # Handle format conversion if needed
-    ext = os.path.splitext(output_path)[1].lower()
-    if original_mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    
-    # Save with maximum quality
-    if ext in ('.jpg', '.jpeg'):
-        img.save(output_path, quality=95, optimize=True)
-    else:
-        img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def auto_adjust(input_path, output_path):
     """
@@ -117,12 +108,7 @@ def auto_adjust(input_path, output_path):
         img = ImageEnhance.Brightness(img).enhance(1.1)
         img = ImageEnhance.Color(img).enhance(1.2)
     
-    # Handle format conversion if needed
-    ext = os.path.splitext(output_path)[1].lower()
-    if original_mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def resize_image(input_path, output_path, width, height):
     """
@@ -137,11 +123,7 @@ def resize_image(input_path, output_path, width, height):
     img = Image.open(input_path)
     img = img.resize((int(width), int(height)), Image.LANCZOS)
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def rotate_image(input_path, output_path, angle):
     """
@@ -155,11 +137,7 @@ def rotate_image(input_path, output_path, angle):
     img = Image.open(input_path)
     img = img.rotate(-float(angle), expand=True, resample=Image.BICUBIC)
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def flip_image(input_path, output_path, direction):
     """
@@ -177,11 +155,7 @@ def flip_image(input_path, output_path, direction):
     elif direction == 'vertical':
         img = img.transpose(Image.FLIP_TOP_BOTTOM)
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def adjust_brightness(input_path, output_path, factor):
     """
@@ -196,11 +170,7 @@ def adjust_brightness(input_path, output_path, factor):
     enhancer = ImageEnhance.Brightness(img)
     img = enhancer.enhance(float(factor))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def adjust_contrast(input_path, output_path, factor):
     """
@@ -215,11 +185,7 @@ def adjust_contrast(input_path, output_path, factor):
     enhancer = ImageEnhance.Contrast(img)
     img = enhancer.enhance(float(factor))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def adjust_saturation(input_path, output_path, factor):
     """
@@ -234,11 +200,7 @@ def adjust_saturation(input_path, output_path, factor):
     enhancer = ImageEnhance.Color(img)
     img = enhancer.enhance(float(factor))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def adjust_hue(input_path, output_path, shift):
     """
@@ -249,17 +211,47 @@ def adjust_hue(input_path, output_path, shift):
         output_path: Path to save output image
         shift: Hue shift in degrees (0-360)
     """
+    # Load the image with PIL first to check format
+    pil_img = Image.open(input_path)
+    has_alpha = 'A' in pil_img.mode
+    
     # OpenCV works better for hue adjustment
-    img = cv2.imread(input_path)
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img = cv2.imread(input_path, cv2.IMREAD_UNCHANGED if has_alpha else cv2.IMREAD_COLOR)
     
-    # Shift the hue
-    shift_float = float(shift)
-    img_hsv[:, :, 0] = (img_hsv[:, :, 0] + shift_float) % 180
-    
-    # Convert back to BGR and save
-    img_result = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
-    cv2.imwrite(output_path, img_result)
+    if has_alpha:
+        # Split into BGR and Alpha
+        bgr = img[:, :, :3]
+        alpha = img[:, :, 3]
+        
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        
+        # Shift the hue
+        shift_float = float(shift)
+        hsv[:, :, 0] = (hsv[:, :, 0] + shift_float) % 180
+        
+        # Convert back to BGR
+        bgr_adjusted = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        
+        # Merge back with alpha
+        img_adjusted = cv2.merge([bgr_adjusted[:, :, 0], 
+                                  bgr_adjusted[:, :, 1], 
+                                  bgr_adjusted[:, :, 2], 
+                                  alpha])
+        
+        # Save with PIL to preserve alpha
+        pil_output = Image.fromarray(cv2.cvtColor(img_adjusted, cv2.COLOR_BGRA2RGBA))
+        save_image_with_format_compatibility(pil_output, output_path)
+    else:
+        # For non-alpha images, use the original approach
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        
+        # Shift the hue
+        img_hsv[:, :, 0] = (img_hsv[:, :, 0] + shift_float) % 180
+        
+        # Convert back to BGR and save
+        img_result = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
+        cv2.imwrite(output_path, img_result)
 
 def adjust_vibrance(input_path, output_path, factor):
     """
@@ -270,25 +262,59 @@ def adjust_vibrance(input_path, output_path, factor):
         output_path: Path to save output image
         factor: Vibrance factor (1.0 is original, < 1.0 decreases, > 1.0 increases)
     """
+    # Load the image with PIL first to check format
+    pil_img = Image.open(input_path)
+    has_alpha = 'A' in pil_img.mode
+    
     # Use OpenCV for vibrance
-    img = cv2.imread(input_path)
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
-    
-    # Calculate average saturation
-    avg_sat = np.mean(img_hsv[:, :, 1])
-    
-    # Apply vibrance adjustment (boost less saturated pixels more)
-    factor_float = float(factor) - 1.0
-    if factor_float != 0:
-        mask = (255 - img_hsv[:, :, 1]) / 255.0
-        img_hsv[:, :, 1] += mask * img_hsv[:, :, 1] * factor_float
+    if has_alpha:
+        # Load with alpha channel
+        img = cv2.imread(input_path, cv2.IMREAD_UNCHANGED)
+        # Split channels
+        b, g, r, a = cv2.split(img)
+        bgr = cv2.merge([b, g, r])
         
-    # Clip values to valid range
-    img_hsv[:, :, 1] = np.clip(img_hsv[:, :, 1], 0, 255)
-    
-    # Convert back to BGR and save
-    img_result = cv2.cvtColor(img_hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
-    cv2.imwrite(output_path, img_result)
+        # Process only BGR channels
+        img_hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV).astype(np.float32)
+        
+        # Apply vibrance adjustment
+        factor_float = float(factor) - 1.0
+        if factor_float != 0:
+            mask = (255 - img_hsv[:, :, 1]) / 255.0
+            img_hsv[:, :, 1] += mask * img_hsv[:, :, 1] * factor_float
+            
+        # Clip values to valid range
+        img_hsv[:, :, 1] = np.clip(img_hsv[:, :, 1], 0, 255)
+        
+        # Convert back to BGR
+        bgr_result = cv2.cvtColor(img_hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+        
+        # Merge back with alpha
+        img_result = cv2.merge([bgr_result[:, :, 0], 
+                               bgr_result[:, :, 1], 
+                               bgr_result[:, :, 2], 
+                               a])
+        
+        # Save with PIL to preserve alpha
+        pil_output = Image.fromarray(cv2.cvtColor(img_result, cv2.COLOR_BGRA2RGBA))
+        save_image_with_format_compatibility(pil_output, output_path)
+    else:
+        # Non-alpha processing
+        img = cv2.imread(input_path)
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
+        
+        # Apply vibrance adjustment
+        factor_float = float(factor) - 1.0
+        if factor_float != 0:
+            mask = (255 - img_hsv[:, :, 1]) / 255.0
+            img_hsv[:, :, 1] += mask * img_hsv[:, :, 1] * factor_float
+            
+        # Clip values to valid range
+        img_hsv[:, :, 1] = np.clip(img_hsv[:, :, 1], 0, 255)
+        
+        # Convert back to BGR and save
+        img_result = cv2.cvtColor(img_hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+        cv2.imwrite(output_path, img_result)
 
 def compress_image(input_path, output_path, quality):
     """
@@ -300,33 +326,11 @@ def compress_image(input_path, output_path, quality):
         quality: JPEG quality (0-100)
     """
     img = Image.open(input_path)
-    ext = os.path.splitext(output_path)[1].lower()
-
-    if ext in ('.jpg', '.jpeg'):
-        # JPEG doesn't support transparency, convert if needed
-        if img.mode == 'RGBA':
-            img = img.convert('RGB')
-        # Use optimize and progressive for better compression
-        img.save(
-            output_path,
-            format='JPEG',
-            quality=max(1, min(int(quality), 95)),  # Clamp to 1-95
-            optimize=True,
-            progressive=True
-        )
-    elif ext == '.png':
-        # For PNG, quantize if possible for smaller size, then optimize
-        if img.mode in ('RGBA', 'RGB'):
-            # Quantize to 256 colors if not already palette
-            img_quant = img.convert('P', palette=Image.ADAPTIVE, colors=256)
-            img_quant.save(output_path, format='PNG', optimize=True)
-        else:
-            img.save(output_path, format='PNG', optimize=True)
-    else:
-        # Default fallback - handle transparency for other formats
-        if img.mode == 'RGBA' and ext not in ('.png', '.tiff', '.webp'):
-            img = img.convert('RGB')
-        img.save(output_path, quality=int(quality))
+    
+    # Ensure quality is within valid range
+    quality_val = max(1, min(int(quality), 95))
+    
+    save_image_with_format_compatibility(img, output_path, quality=quality_val)
 
 def apply_black_white(input_path, output_path):
     """
@@ -337,23 +341,29 @@ def apply_black_white(input_path, output_path):
         output_path: Path to save output image
     """
     img = Image.open(input_path)
+    has_alpha = 'A' in img.mode
     
-    # Convert to grayscale
-    img = img.convert('L')
+    if has_alpha:
+        # Extract alpha channel
+        alpha = img.split()[3]
+        
+        # Convert to grayscale
+        gray = img.convert('L')
+        
+        # Create new RGBA image
+        result = Image.new('RGBA', img.size)
+        
+        # Fill RGB channels with grayscale
+        for i in range(3):
+            result.paste(gray, (0, 0), gray)
+        
+        # Add alpha channel back
+        result.putalpha(alpha)
+    else:
+        # Simple grayscale conversion
+        result = img.convert('L')
     
-    # Convert back to RGB for consistent handling
-    img = img.convert('RGB')
-    
-    # Determine if output should be PNG based on extension
-    ext = os.path.splitext(output_path)[1].lower()
-    if ext == '.png' and 'A' in Image.open(input_path).mode:
-        # If input had alpha and output is PNG, we need to preserve alpha
-        original = Image.open(input_path)
-        if original.mode == 'RGBA':
-            r, g, b, a = original.split()
-            img.putalpha(a)
-    
-    img.save(output_path)
+    save_image_with_format_compatibility(result, output_path)
 
 def apply_blur(input_path, output_path, amount=5):
     """
@@ -384,11 +394,7 @@ def apply_blur(input_path, output_path, amount=5):
     else:
         img = img.filter(ImageFilter.GaussianBlur(radius=float(amount)))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def apply_sharpen(input_path, output_path, amount=1.5):
     """
@@ -420,11 +426,7 @@ def apply_sharpen(input_path, output_path, amount=1.5):
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(float(amount))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
 
 def apply_filter(input_path, output_path, filter_type, intensity=100):
     """
@@ -541,8 +543,98 @@ def apply_filter(input_path, output_path, filter_type, intensity=100):
         r, g, b = img.split()
         img = Image.merge('RGBA', (r, g, b, alpha))
     
-    # Handle transparency for JPEG files
-    ext = os.path.splitext(output_path)[1].lower()
-    if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
-        img = img.convert('RGB')
-    img.save(output_path)
+    save_image_with_format_compatibility(img, output_path)
+
+def save_image_with_format_compatibility(img, output_path, quality=95):
+    """
+    Save image with format compatibility handling.
+    Converts RGBA to RGB if saving as JPEG.
+    
+    Args:
+        img: PIL Image object
+        output_path: Path to save the image
+        quality: Quality for lossy formats (0-100)
+    """
+    try:
+        ext = os.path.splitext(output_path)[1].lower()
+        
+        # Make a copy to avoid modifying the original
+        img_copy = img.copy()
+        
+        if ext in ['.jpg', '.jpeg']:
+            # Handle RGBA to RGB conversion for JPEG
+            if img_copy.mode == 'RGBA':
+                # Create a white background
+                background = Image.new('RGB', img_copy.size, (255, 255, 255))
+                # Paste the image with alpha as mask
+                background.paste(img_copy, mask=img_copy.split()[3])
+                # Save the result
+                background.save(output_path, format='JPEG', quality=quality, optimize=True)
+            else:
+                # Ensure RGB mode for JPEG
+                img_copy = img_copy.convert('RGB')
+                img_copy.save(output_path, format='JPEG', quality=quality, optimize=True)
+                
+        elif ext == '.png':
+            # PNG supports all color modes
+            img_copy.save(output_path, format='PNG', optimize=True)
+            
+        elif ext == '.webp':
+            # WebP supports both RGB and RGBA
+            img_copy.save(output_path, format='WEBP', quality=quality)
+            
+        elif ext == '.gif':
+            # GIF with potential palette optimizations
+            if img_copy.mode not in ['P', 'RGB', 'RGBA']:
+                img_copy = img_copy.convert('RGBA')
+            img_copy.save(output_path, format='GIF')
+            
+        else:
+            # Default fallback
+            if img_copy.mode == 'RGBA':
+                img_copy.save(output_path + '.png', format='PNG')
+            else:
+                img_copy = img_copy.convert('RGB')
+                img_copy.save(output_path + '.jpg', format='JPEG', quality=quality, optimize=True)
+                
+    except Exception as e:
+        # If there's any error, try a more aggressive approach
+        try:
+            # Force convert to RGB and save as JPEG
+            img_rgb = img.convert('RGB')
+            img_rgb.save(output_path, format='JPEG', quality=quality)
+        except Exception as e2:
+            # If still failing, attempt to save with a new name as PNG
+            try:
+                new_path = os.path.splitext(output_path)[0] + "_fallback.png"
+                img.save(new_path, format='PNG')
+                # If successful, rename the file to the original intended name
+                import shutil
+                shutil.move(new_path, output_path)
+            except Exception as e3:
+                # If all else fails, raise the original error
+                raise e
+    
+def get_appropriate_extension(operation, input_path=None):
+    """
+    Determine the appropriate extension based on the operation
+    
+    Args:
+        operation: The image operation to be performed
+        input_path: Original image path
+        
+    Returns:
+        String with appropriate extension (without dot) or None
+    """
+    # Operations that should always use PNG for transparency
+    if operation in ['remove_background']:
+        return 'png'
+    
+    # Check if input path has an extension we should preserve
+    if input_path:
+        ext = os.path.splitext(input_path)[1].lower()
+        if ext:
+            return ext[1:]  # Remove the dot
+    
+    # Default to none (use original or fallback)
+    return None
