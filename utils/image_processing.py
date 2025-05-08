@@ -141,7 +141,6 @@ def resize_image(input_path, output_path, width, height):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def rotate_image(input_path, output_path, angle):
@@ -160,7 +159,6 @@ def rotate_image(input_path, output_path, angle):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def flip_image(input_path, output_path, direction):
@@ -183,7 +181,6 @@ def flip_image(input_path, output_path, direction):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def adjust_brightness(input_path, output_path, factor):
@@ -203,7 +200,6 @@ def adjust_brightness(input_path, output_path, factor):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def adjust_contrast(input_path, output_path, factor):
@@ -223,7 +219,6 @@ def adjust_contrast(input_path, output_path, factor):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def adjust_saturation(input_path, output_path, factor):
@@ -243,7 +238,6 @@ def adjust_saturation(input_path, output_path, factor):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-        
     img.save(output_path)
 
 def adjust_hue(input_path, output_path, shift):
@@ -299,7 +293,7 @@ def adjust_vibrance(input_path, output_path, factor):
 def compress_image(input_path, output_path, quality):
     """
     Compress image with specified quality
-    
+
     Args:
         input_path: Path to input image
         output_path: Path to save output image
@@ -316,7 +310,7 @@ def compress_image(input_path, output_path, quality):
         img.save(
             output_path,
             format='JPEG',
-            quality=max(85, min(int(quality), 95)),  # Clamp to 85-95 for visually lossless
+            quality=max(1, min(int(quality), 95)),  # Clamp to 1-95
             optimize=True,
             progressive=True
         )
@@ -394,7 +388,6 @@ def apply_blur(input_path, output_path, amount=5):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-    
     img.save(output_path)
 
 def apply_sharpen(input_path, output_path, amount=1.5):
@@ -431,7 +424,6 @@ def apply_sharpen(input_path, output_path, amount=1.5):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-    
     img.save(output_path)
 
 def apply_filter(input_path, output_path, filter_type, intensity=100):
@@ -553,5 +545,4 @@ def apply_filter(input_path, output_path, filter_type, intensity=100):
     ext = os.path.splitext(output_path)[1].lower()
     if img.mode == 'RGBA' and ext in ('.jpg', '.jpeg'):
         img = img.convert('RGB')
-    
     img.save(output_path)
