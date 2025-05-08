@@ -26,5 +26,13 @@
         ]
       }
     ]
+  },
+  "storage": {
+    "rules": {
+      "uploads/{fileName}": {
+        "allow read": true,
+        "allow write": true
+      }
+    }
   }
 }

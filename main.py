@@ -2,19 +2,22 @@ import os
 import logging
 import uuid
 import stripe
-import time
-from flask import Flask, render_template, request, jsonify, session, redirect
+import shutil
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+import firebase_admin
+from firebase_admin import credentials, storage
+from google.cloud import storage as gcs
 from utils.image_processing import (
-    remove_background, 
-    enhance_image_quality, 
-    resize_image, 
-    rotate_image, 
+    remove_background,
+    enhance_image_quality,
+    resize_image,
+    rotate_image,
     flip_image,
-    adjust_brightness, 
-    adjust_contrast, 
-    adjust_saturation, 
+    adjust_brightness,
+    adjust_contrast,
+    adjust_saturation,
     adjust_hue,
     adjust_vibrance,
     compress_image,
@@ -22,53 +25,192 @@ from utils.image_processing import (
     apply_blur,
     apply_sharpen,
     apply_filter,
-    auto_adjust  # Add this import
+    auto_adjust
 )
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-
-port = int(os.environ.get("PORT", 8080))
-host = "0.0.0.0"
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
 CORS(app)
 
-# Configure Stripe
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-logging.debug(f"Stripe configured with API key: {'*' * (len(os.environ.get('STRIPE_SECRET_KEY', '')) - 4) + os.environ.get('STRIPE_SECRET_KEY', '')[-4:] if os.environ.get('STRIPE_SECRET_KEY') else 'Not set'}")
+# Define paths for local storage as fallback
+UPLOAD_FOLDER = '/tmp/uploads'
+PUBLIC_FOLDER = os.path.join('static', 'uploads')
+PUBLIC_URL_PREFIX = '/static/uploads/'
 
-# Configure upload folder
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# Create upload directory if it doesn't exist
+# Create directories if they don't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PUBLIC_FOLDER, exist_ok=True)
 
-# Make sure uploads directory has proper permissions
-try:
-    os.chmod(UPLOAD_FOLDER, 0o755)
-except Exception as e:
-    logging.warning(f"Could not set permissions on upload folder: {str(e)}")
-
+# Configure file upload settings
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 
-# Clear upload folder on startup
+# Configure GCS settings
+BUCKET_NAME = os.environ.get('GCS_BUCKET_NAME', 'trag-image-alchemist.firebasestorage.app')  # <-- match your Firebase bucket
+use_gcs = True  # Set this to False to force local storage
+
+# Initialize Firebase Admin SDK with service account
 try:
-    for file in os.listdir(UPLOAD_FOLDER):
-        file_path = os.path.join(UPLOAD_FOLDER, file)
-        if os.path.isfile(file_path):
-            os.unlink(file_path)
-    logging.info(f"Cleared upload folder: {UPLOAD_FOLDER}")
+    cred = credentials.Certificate('firebase-config.json')
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': BUCKET_NAME
+    })
+    storage_client = gcs.Client.from_service_account_json('firebase-config.json')
+    bucket = storage_client.bucket(BUCKET_NAME)
+    logging.info("Successfully initialized GCS with service account")
 except Exception as e:
-    logging.error(f"Error clearing upload folder: {str(e)}")
+    logging.error(f"Failed to initialize GCS: {str(e)}")
+    use_gcs = False
+
+# Configure Stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
 def allowed_file(filename):
+    """Check if file extension is allowed"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def generate_filename(original_filename):
+    """Generate a unique filename while preserving extension"""
+    if not original_filename:
+        return f"{uuid.uuid4()}.jpg"
+    ext = original_filename.rsplit('.', 1)[1].lower() if '.' in original_filename else 'jpg'
+    return f"{uuid.uuid4()}.{ext}"
+
+# Storage operation functions with fallback
+def store_file(file_obj, destination_filename=None):
+    """Store file using GCS or local filesystem with fallback"""
+    if not file_obj:
+        raise ValueError("No file provided")
+        
+    # Generate unique filename if not provided
+    if not destination_filename:
+        destination_filename = generate_filename(file_obj.filename)
+        
+    # Save locally first (needed for upload)
+    local_path = os.path.join(UPLOAD_FOLDER, destination_filename)
+    file_obj.save(local_path)
+    
+    # Always upload to GCS if available
+    try:
+        gcs_path = f'uploads/{destination_filename}'
+        blob = bucket.blob(gcs_path)
+        blob.upload_from_filename(local_path)
+        blob.make_public()
+        url = f'https://storage.googleapis.com/{BUCKET_NAME}/{gcs_path}'
+        os.remove(local_path)
+        return {'path': gcs_path, 'url': url, 'storage': 'gcs'}
+    except Exception as e:
+        logging.error(f"GCS upload failed: {str(e)}")
+        raise RuntimeError("Failed to upload to Firebase Storage")
+
+def retrieve_file(file_path, output_path):
+    """Retrieve file from GCS only"""
+    if not file_path:
+        raise ValueError("No file path provided")
+    if file_path.startswith('uploads/'):
+        try:
+            blob = bucket.blob(file_path)
+            blob.download_to_filename(output_path)
+            return True
+        except Exception as e:
+            logging.error(f"Error retrieving from GCS: {str(e)}")
+            return False
+    else:
+        logging.error("Only GCS storage is supported for retrieval.")
+        return False
+
+def delete_file(file_path):
+    """Delete file from GCS only"""
+    if not file_path:
+        return
+    if file_path.startswith('uploads/'):
+        try:
+            blob = bucket.blob(file_path)
+            blob.delete()
+        except Exception as e:
+            logging.error(f"Error deleting from GCS: {str(e)}")
+    else:
+        logging.error("Only GCS storage is supported for deletion.")
+
+def process_and_store(input_path, operation, params=None):
+    """Process image and store the result"""
+    if params is None:
+        params = {}
+        
+    # Generate output filename
+    output_filename = generate_filename(os.path.basename(input_path))
+    output_path = os.path.join(UPLOAD_FOLDER, output_filename)
+    
+    # Process the image
+    if operation == 'remove_background':
+        background_color = params.get('color', None)
+        remove_background(input_path, output_path, background_color)
+    elif operation == 'enhance':
+        enhance_image_quality(input_path, output_path)
+    elif operation == 'auto_adjust':
+        auto_adjust(input_path, output_path)
+    elif operation == 'resize':
+        width = params.get('width')
+        height = params.get('height')
+        resize_image(input_path, output_path, width, height)
+    elif operation == 'rotate':
+        angle = params.get('angle', 90)
+        rotate_image(input_path, output_path, angle)
+    elif operation == 'flip':
+        direction = params.get('direction', 'horizontal')
+        flip_image(input_path, output_path, direction)
+    elif operation == 'brightness':
+        factor = params.get('factor', 1.0)
+        adjust_brightness(input_path, output_path, factor)
+    elif operation == 'contrast':
+        factor = params.get('factor', 1.0)
+        adjust_contrast(input_path, output_path, factor)
+    elif operation == 'saturation':
+        factor = params.get('factor', 1.0)
+        adjust_saturation(input_path, output_path, factor)
+    elif operation == 'hue':
+        factor = params.get('factor', 0)
+        adjust_hue(input_path, output_path, factor)
+    elif operation == 'vibrance':
+        factor = params.get('factor', 1.0)
+        adjust_vibrance(input_path, output_path, factor)
+    elif operation == 'compress':
+        quality = params.get('quality', 85)
+        compress_image(input_path, output_path, quality)
+    elif operation == 'bw':
+        apply_black_white(input_path, output_path)
+    elif operation == 'blur':
+        amount = params.get('amount', 5)
+        apply_blur(input_path, output_path, amount)
+    elif operation == 'sharpen':
+        amount = params.get('amount', 1.5)
+        apply_sharpen(input_path, output_path, amount)
+    elif operation == 'filter':
+        filter_type = params.get('type', 'none')
+        intensity = int(params.get('intensity', 100))
+        apply_filter(input_path, output_path, filter_type, intensity)
+    else:
+        raise ValueError(f"Unknown operation: {operation}")
+        
+    # Always upload processed image to GCS
+    try:
+        gcs_path = f'uploads/{output_filename}'
+        blob = bucket.blob(gcs_path)
+        blob.upload_from_filename(output_path)
+        blob.make_public()
+        url = f'https://storage.googleapis.com/{BUCKET_NAME}/{gcs_path}'
+        os.remove(output_path)  # Clean up local file
+        return {'path': gcs_path, 'url': url, 'storage': 'gcs'}
+    except Exception as e:
+        logging.error(f"GCS upload failed: {str(e)}")
+        raise RuntimeError("Failed to upload processed image to Firebase Storage")
+
+# Routes
 @app.route('/')
 def landing():
     return render_template('landing.html')
@@ -87,7 +229,6 @@ def success():
     session_id = request.args.get('session_id')
     if session_id:
         logging.debug(f"Success with session ID: {session_id}")
-        # In a production app, you'd verify the session and update user's subscription status
     return render_template('success.html')
 
 @app.route('/create-checkout-session', methods=['POST'])
@@ -101,7 +242,6 @@ def create_checkout_session():
         logging.debug(f"Domain URL: {domain_url}")
         
         # Map frontend price IDs to actual Stripe price IDs
-        # In a production app, these would be stored in a database
         price_mapping = {
             'price_pro_monthly': os.environ.get('STRIPE_PRICE_PRO', 'price_1OCKZDCiJgPd76i1C0RFkRVN'),
             'price_enterprise_monthly': os.environ.get('STRIPE_PRICE_ENTERPRISE', 'price_1OCKZ7CiJgPd76i14tQfJY7v')
@@ -143,27 +283,29 @@ def upload_file():
         return jsonify({'error': 'No file part'}), 400
     
     file = request.files['file']
-    
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     
     if file and allowed_file(file.filename):
-        # Create a unique filename
-        filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        # Store the filepath in the session
-        session['original_image'] = filepath
-        session['current_image'] = filepath
-        
-        return jsonify({
-            'success': True,
-            'filename': filename,
-            'filepath': filepath,
-            'url': f'/static/uploads/{filename}'
-        })
-    
+        try:
+            # Store the file (either GCS or local fallback)
+            result = store_file(file)
+            
+            # Store file paths in session
+            session['original_image'] = result['path']
+            session['current_image'] = result['path']
+            session['storage_type'] = result['storage']
+            
+            return jsonify({
+                'success': True,
+                'filename': os.path.basename(result['path']),
+                'url': result['url']
+            })
+            
+        except Exception as e:
+            logging.error(f"Error in file upload: {str(e)}")
+            return jsonify({'error': str(e)}), 500
+            
     return jsonify({'error': 'File type not allowed'}), 400
 
 @app.route('/process', methods=['POST'])
@@ -179,105 +321,27 @@ def process_image():
             logging.error("No image in session to process")
             return jsonify({'error': 'No image to process'}), 400
         
-        input_path = session['current_image']
-
-        # --- Wait for file to exist before processing (fixes race condition) ---
-        max_wait = 8  # seconds
-        waited = 0
-        while not os.path.exists(input_path) and waited < max_wait:
-            logging.warning(f"Waiting for file to exist: {input_path}")
-            time.sleep(0.5)
-            waited += 0.5
-        if not os.path.exists(input_path):
-            logging.error(f"File not found after waiting: {input_path}")
-            return jsonify({'error': f'No such file or directory: {input_path}'}), 404
-
-        # Generate a new filename for the processed image
-        # Always use .png for operations that may result in transparency
-        input_ext = input_path.rsplit('.', 1)[1].lower()
+        # Download current image to temp location
+        current_path = session['current_image']
+        temp_input = os.path.join(UPLOAD_FOLDER, f'input_{os.path.basename(current_path)}')
         
-        # Use PNG for operations that might result in transparency
-        if operation == 'remove_background' or (input_ext in ['png'] and operation in ['enhance', 'rotate', 'flip']):
-            output_filename = str(uuid.uuid4()) + '.png'
-        else:
-            output_filename = str(uuid.uuid4()) + '.' + input_ext
-        output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
+        if not retrieve_file(current_path, temp_input):
+            return jsonify({'error': 'Could not retrieve the image'}), 500
         
-        # Process image based on operation
-        if operation == 'remove_background':
-            background_color = params.get('color', None)
-            logging.debug(f"Removing background with color: {background_color}")
-            remove_background(input_path, output_path, background_color)
+        # Process the image and store the result
+        result = process_and_store(temp_input, operation, params)
         
-        elif operation == 'enhance':
-            enhance_image_quality(input_path, output_path)
-            
-        elif operation == 'auto_adjust':
-            auto_adjust(input_path, output_path)
+        # Update session with new image path
+        session['current_image'] = result['path']
+        session['storage_type'] = result['storage']
         
-        elif operation == 'resize':
-            width = params.get('width')
-            height = params.get('height')
-            resize_image(input_path, output_path, width, height)
-        
-        elif operation == 'rotate':
-            angle = params.get('angle', 90)
-            rotate_image(input_path, output_path, angle)
-        
-        elif operation == 'flip':
-            direction = params.get('direction', 'horizontal')
-            flip_image(input_path, output_path, direction)
-        
-        elif operation == 'brightness':
-            factor = params.get('factor', 1.0)
-            adjust_brightness(input_path, output_path, factor)
-        
-        elif operation == 'contrast':
-            factor = params.get('factor', 1.0)
-            adjust_contrast(input_path, output_path, factor)
-        
-        elif operation == 'saturation':
-            factor = params.get('factor', 1.0)
-            adjust_saturation(input_path, output_path, factor)
-        
-        elif operation == 'hue':
-            factor = params.get('factor', 0)
-            adjust_hue(input_path, output_path, factor)
-        
-        elif operation == 'vibrance':
-            factor = params.get('factor', 1.0)
-            adjust_vibrance(input_path, output_path, factor)
-        
-        elif operation == 'compress':
-            quality = params.get('quality', 85)
-            compress_image(input_path, output_path, quality)
-            
-        # Filter and effect operations
-        elif operation == 'bw':
-            apply_black_white(input_path, output_path)
-            
-        elif operation == 'blur':
-            amount = params.get('amount', 5)
-            apply_blur(input_path, output_path, amount)
-            
-        elif operation == 'sharpen':
-            amount = params.get('amount', 1.5)
-            apply_sharpen(input_path, output_path, amount)
-            
-        elif operation == 'filter':
-            filter_type = params.get('type', 'none')
-            intensity = int(params.get('intensity', 100))
-            apply_filter(input_path, output_path, filter_type, intensity)
-        
-        else:
-            return jsonify({'error': f'Unknown operation: {operation}'}), 400
-        
-        # Update the current image in the session
-        session['current_image'] = output_path
+        # Clean up temp file
+        if os.path.exists(temp_input):
+            os.remove(temp_input)
         
         return jsonify({
             'success': True,
-            'url': f'/static/uploads/{output_filename}'
+            'url': result['url']
         })
     
     except Exception as e:
@@ -287,10 +351,14 @@ def process_image():
 @app.route('/reset', methods=['POST'])
 def reset_image():
     if 'original_image' in session and 'current_image' in session:
-        session['current_image'] = session['original_image']
+        original_path = session['original_image']
+        # Always use GCS URL
+        url = f'https://storage.googleapis.com/{BUCKET_NAME}/{original_path}'
+        session['current_image'] = original_path
+        session['storage_type'] = 'gcs'
         return jsonify({
             'success': True,
-            'url': session['original_image'].replace('static/', '/static/')
+            'url': url
         })
     return jsonify({'error': 'No original image found'}), 400
 
@@ -298,15 +366,27 @@ def reset_image():
 def download_image():
     if 'current_image' not in session:
         return jsonify({'error': 'No image to download'}), 400
-    
+    current_path = session['current_image']
+    url = f'https://storage.googleapis.com/{BUCKET_NAME}/{current_path}'
     return jsonify({
         'success': True,
-        'url': session['current_image'].replace('static/', '/static/')
+        'url': url
     })
+
+@app.route('/static/uploads/<filename>')
+def serve_upload(filename):
+    """Serve files from the uploads directory"""
+    return send_from_directory(PUBLIC_FOLDER, filename)
 
 @app.route('/health')
 def health_check():
-    return jsonify({"status": "healthy"}), 200
+    storage_status = "GCS" if use_gcs else "Local Storage"
+    return jsonify({
+        "status": "healthy",
+        "storage": storage_status
+    }), 200
 
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 8080))
+    host = "0.0.0.0"
     app.run(host=host, port=port, debug=True)

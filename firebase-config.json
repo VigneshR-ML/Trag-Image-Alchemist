@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "trag-image-alchemist",
+  "private_key_id": "35087acd48f2ad1077c9f78ea02483edbb26c78b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDNK8zBCbNeZgVW\nblfh6Lt0Dr7UencJPxbSvdN43RI06P3t1p1obtZTXfSjl03GDtcXJjharVSVKNo0\nm1fKEa+SALJgD8unMGy4dmf3EceNysoAth7+ywR/QWl3kvKv73MGG69o/K4TTSOg\nRvDbP4TJFH9/quXZPx8aYOFTGLNAwBl4aP+H51twAMoRptC7AqSr1aQXUcU6l2Pe\nBGK9jFGKaz0YChyfNKJebt3UjE73fgNM+7kp17rMOR7lPTCPKIgpMaXmwZbEkmFU\ncZPvByFObKXgu0BC8vUUMNu2dUUx0imB8FFW/cd5kqCnTpOWVPAQDoCm3u0bxozR\nc30XGED/AgMBAAECggEAKCs+IEEk9ANnYh+iZyFoqfVFGVaMvauzbTkrEQu/R8qi\nBJGzKcIhhhrsDadO28sGA4tBF0e+OqHP7uLHElHaHOyz/6i4B5isgIT2H+JEPpeI\naxE9Ckd3Lu8Alh+YEigATh7XfeeSsUa2Beg9ub864R95QuaTr6/zB/gVxW4dkjxw\nQehaGmGaXHtH4cU2Uxc1OZKBUk9oLZNVhEgBn2xp/xlHTlIRfU8aG606JS/5f3Yb\n4avJt5EMM5ItTtKe2WEkY8jsft6Uzydofp5fvMMrfLMSrJi/yZ6B2Q56OTqOcIXc\nBHa47HnojsvsGPkRb6qP2QlcA9hMmCZFzYpJaOdLqQKBgQDm80tha88200qzGVNY\n9lYnWaHyYtRmOI3hDwpYiWUaZ8o0qOg0IbkDFpr0iWhEvOdjSsVcRn9NE5PAv/U+\nwnrANGz585sVv6cgw3MqZ2HKfXKfYYNu4S1ZgKpCHE82diPvs/sXH6RCzJjNW7Iz\nUg+cvs89qp0FMjTNF/smJnYs/QKBgQDjbLPfnc5YzdbnKi70Ug+LF5bbKxaCrpGt\n6WwV6CL1EKWnVlhR95hndc9JO52xDl0Eh5NzG28tmqvGUDfuDHHPmV0EYTjn5TYe\nMGkL/mFRoaj5ZTFOVPoceQsdDLcxU+fqT4Jl051VVhOlG/ueAKJ4N05IxG0nArYK\nvx1XS5lEqwKBgQDeHLyxfBL0gm8EImYzV+5xt9V1nLDzgo6JFYL4tWLj60/gJ1Xy\n1T/vBW2PoxsBiL/skXuQDEjgIuTl6nd9nWKauZDZLv1HBGRCsVZwQK8fJFj5ibnz\nCGMqAgE8xac1FJfpL6pbidXbXJPUZMzUaKaVNDlx8EVFOwzm9ppXDYR4LQKBgQDf\n5+bT8x70KXw6TTq7SouJCql4kFxyPwKocZb7nnfERSaCsKz1zknbGo8Bb9NaPWTx\nD7Xo7wqvoIccEWBvWws2M6zzofCPxwhYApt5tnIEF6AwIiPAFkPEgpuhdyJpS02a\nT7t3Gzfci4l91iYNMlzC9Nh7JgC9Fps5y11M095LTwKBgQC470YSiQIhRzgZanqj\nsTVKIHmc2Nxn5D0IcbdeKK/tfwdAHCR5tzj3w8itQDMHjQLW5XHpUonN/wK2gI9o\nmK5wj4Cu1FoP+zDOCf7S7sT8cz4pBoYJm0eEuTCBFKb4W98fjfORflApSIgtHNKF\n5lgtZdTHmMqe3lYMNHHUWtOtjg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@trag-image-alchemist.iam.gserviceaccount.com",
+  "client_id": "102482969527750201872",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40trag-image-alchemist.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

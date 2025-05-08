@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 utils/__pycache__/
+
 # Node
 node_modules/
 dist/
@@ -12,5 +13,15 @@ build/
 .venv/
 .firebase/
 
-#folders
+# Environment variables and secrets
+.env
+*.pem
+service-account.json
+
+# Folders
 attached_assets/
+static/uploads/
+
+# Temporary files
+/tmp
+*.log
